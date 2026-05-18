@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { deleteUnit } from '@/app/units/actions'
-import { deleteBuilding } from '../actions'
+import DeleteBuildingButton from '@/components/DeleteBuildingButton'
 
 export default async function BuildingDetailPage({
   params,
@@ -46,14 +46,7 @@ export default async function BuildingDetailPage({
               Edit
             </Link>
             {building.units.length === 0 && (
-              <form action={async () => {
-                'use server'
-                await deleteBuilding(building.id)
-              }}>
-                <button type="submit" className="inline-flex items-center rounded-md bg-red-900/50 border border-red-500/20 px-3 py-2 text-sm font-semibold text-red-400 shadow-sm hover:bg-red-900/70">
-                  Delete
-                </button>
-              </form>
+              <DeleteBuildingButton id={building.id} isDetail={true} />
             )}
           </div>
         </div>

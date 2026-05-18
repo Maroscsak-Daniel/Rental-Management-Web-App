@@ -17,8 +17,8 @@ This document contains the execution log for the Rental Management Web App tests
 | `TC-BLD-04` | Update Building | Name changes are saved | Renamed to "Automated Test Building - Updated" | **PASS** | | |
 | `TC-BLD-05` | Delete Building (Without Units) | Building is removed | Building deleted. (Note: minor UI bug on redirect to 404, but DB deletion successful) | **PASS** | | |
 | `TC-UNT-01` | Setup Building | Create building for unit tests | "Test Building For Units" successfully created | **PASS** | | |
-| `TC-UNT-02` | Create Unit (Edge Cases) | Form rejects negative numbers for rent and size | Saved unit with `-50` size and `$-100` rent | **FAIL** | **CRITICAL BUG**: Missing input validation for negative values on frontend and backend. | No |
+| `TC-UNT-02` | Create Unit (Edge Cases) | Form rejects negative numbers for rent and size | Saved unit with `-50` size and `$-100` rent | **FAIL** | Missing input validation for negative values on frontend and backend. | Yes |
 | `TC-UNT-03` | Create Unit (Success) | Valid data creates unit | Unit created successfully with valid positive numbers | **PASS** | | |
-| `TC-UNT-04` | Constraint Test (Delete Building with Units) | Cannot delete building with units; UI shows error | Deletion blocked by database, but failed silently on UI (no error shown) | **FAIL** | **UI BUG**: Silent failure. Need to catch constraint error in Server Action and display it in UI. | No |
+| `TC-UNT-04` | Constraint Test (Delete Building with Units) | Cannot delete building with units; UI shows error | Deletion blocked by database, but failed silently on UI (no error shown) | **FAIL** |  Silent failure. Need to catch constraint error in Server Action and display it in UI. | Yes |
 | `TC-UNT-05` | Update Unit | Edits to rent and status persist | Unit updated to `$1500` and `occupied` | **PASS** | | |
 | `TC-UNT-06` | Cleanup | Delete unit then delete building | Both deleted successfully | **PASS** | | |
