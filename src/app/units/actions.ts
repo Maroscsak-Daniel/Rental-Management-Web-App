@@ -12,6 +12,9 @@ export async function createUnit(formData: FormData) {
   const rent_amount = parseFloat(formData.get('rent_amount') as string)
   const status = formData.get('status') as UnitStatus || 'vacant'
 
+  if (rent_amount < 0) return { error: 'Rent amount cannot be negative.' }
+  if (size_sqm !== null && size_sqm < 0) return { error: 'Size cannot be negative.' }
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -55,6 +58,9 @@ export async function updateUnit(id: string, formData: FormData) {
   const size_sqm = formData.get('size_sqm') ? parseFloat(formData.get('size_sqm') as string) : null
   const rent_amount = parseFloat(formData.get('rent_amount') as string)
   const status = formData.get('status') as UnitStatus
+
+  if (rent_amount < 0) return { error: 'Rent amount cannot be negative.' }
+  if (size_sqm !== null && size_sqm < 0) return { error: 'Size cannot be negative.' }
 
   const {
     data: { user },

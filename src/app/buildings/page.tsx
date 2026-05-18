@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
-import { deleteBuilding } from './actions'
+import DeleteBuildingButton from '@/components/DeleteBuildingButton'
 
 export default async function BuildingsPage() {
   const supabase = await createClient()
@@ -76,14 +76,7 @@ export default async function BuildingsPage() {
                               <Link href={`/buildings/${building.id}/edit`} className="text-zinc-400 hover:text-white">
                                 Edit<span className="sr-only">, {building.name}</span>
                               </Link>
-                              <form action={async () => {
-                                'use server'
-                                await deleteBuilding(building.id)
-                              }}>
-                                <button type="submit" className="text-red-400 hover:text-red-300">
-                                  Delete<span className="sr-only">, {building.name}</span>
-                                </button>
-                              </form>
+                              <DeleteBuildingButton id={building.id} name={building.name} />
                             </div>
                           </td>
                         </tr>

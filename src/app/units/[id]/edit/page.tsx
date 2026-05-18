@@ -155,6 +155,7 @@ export default function EditUnitPage({
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     name="size_sqm"
                     id="size_sqm"
                     defaultValue={unitData.size_sqm || ''}
@@ -171,6 +172,7 @@ export default function EditUnitPage({
                   <input
                     type="number"
                     step="0.01"
+                    min="0"
                     name="rent_amount"
                     id="rent_amount"
                     defaultValue={unitData.rent_amount}

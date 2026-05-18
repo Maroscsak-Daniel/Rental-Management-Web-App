@@ -113,6 +113,7 @@ function UnitForm() {
               <input
                 type="number"
                 step="0.01"
+                min="0"
                 name="size_sqm"
                 id="size_sqm"
                 className="block w-full rounded-md border-0 bg-white/5 py-1.5 px-3 text-white ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm sm:leading-6"
@@ -129,6 +130,7 @@ function UnitForm() {
               <input
                 type="number"
                 step="0.01"
+                min="0"
                 name="rent_amount"
                 id="rent_amount"
                 required
