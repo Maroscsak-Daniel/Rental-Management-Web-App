@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -34,6 +35,11 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: name,
+        }
+      }
     })
 
     if (error) {
@@ -47,13 +53,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-950 to-zinc-950"></div>
-      
-      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8 shadow-2xl backdrop-blur-xl">
+    <div className="flex min-h-screen items-center justify-center bg-[#25344F] p-4">
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-white">Create an account</h1>
-          <p className="mt-2 text-sm text-zinc-400">Start managing your rental properties</p>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create Account</h1>
+          <p className="mt-2 text-sm text-gray-500">Start managing your rental properties</p>
         </div>
 
         {error && (
@@ -64,8 +68,25 @@ export default function RegisterPage() {
 
         <form onSubmit={handleRegister} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
-              Email address
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Full Name
+            </label>
+            <div className="mt-2 mb-6">
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
+                placeholder="Enter your full name"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
             </label>
             <div className="mt-2">
               <input
@@ -74,14 +95,14 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-white focus:outline-none focus:ring-1 focus:ring-white sm:text-sm"
-                placeholder="you@example.com"
+                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
+                placeholder="Enter your email"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
             <div className="mt-2">
@@ -91,14 +112,14 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-white focus:outline-none focus:ring-1 focus:ring-white sm:text-sm"
-                placeholder="••••••••"
+                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
+                placeholder="Enter your password"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-300">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
               Confirm Password
             </label>
             <div className="mt-2">
@@ -108,8 +129,8 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="block w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-white placeholder-zinc-500 focus:border-white focus:outline-none focus:ring-1 focus:ring-white sm:text-sm"
-                placeholder="••••••••"
+                className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
+                placeholder="Confirm your password"
               />
             </div>
           </div>
@@ -117,16 +138,16 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full justify-center rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-black shadow-sm transition-colors hover:bg-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex w-full justify-center rounded-lg bg-[#781C21] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#61161a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#781C21] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'Creating account...' : 'Register'}
           </button>
         </form>
 
-        <p className="mt-8 text-center text-sm text-zinc-400">
+        <p className="mt-8 text-center text-sm text-gray-600">
           Already have an account?{' '}
-          <Link href="/login" className="font-semibold text-white hover:underline">
-            Sign in here
+          <Link href="/login" className="font-semibold text-[#781C21] hover:underline">
+            Login
           </Link>
         </p>
       </div>
