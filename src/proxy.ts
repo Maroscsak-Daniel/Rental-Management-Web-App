@@ -26,11 +26,15 @@ export async function proxy(request: NextRequest) {
 
   if (user && isLandlordRoute) {
     // Optimistic check: get user role from profiles table
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
+
+    if (error) {
+      console.error('Proxy profile fetch error:', error)
+    }
 
     if (profile?.role !== 'landlord') {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
