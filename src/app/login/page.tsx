@@ -27,7 +27,22 @@ export default function LoginPage() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+
+        if (profile?.role === 'tenant') {
+          router.push('/portal')
+        } else {
+          router.push('/dashboard')
+        }
+      } else {
+        router.push('/dashboard')
+      }
       router.refresh()
     }
   }
@@ -37,7 +52,7 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">Rental Management</h1>
-          <p className="mt-2 text-sm text-gray-500">Sign in to your landlord account</p>
+          <p className="mt-2 text-sm text-gray-500">Sign in to your account</p>
         </div>
 
         {error && (
