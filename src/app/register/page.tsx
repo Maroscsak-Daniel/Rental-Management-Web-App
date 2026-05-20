@@ -57,7 +57,8 @@ export default function RegisterPage() {
       <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-2xl">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">Create Account</h1>
-          <p className="mt-2 text-sm text-gray-500">Start managing your rental properties</p>
+          <p className="mt-2 text-sm text-gray-500">Register as a landlord to manage your rental properties</p>
+          <p className="mt-1 text-xs text-gray-400">Tenants are invited by their landlord and cannot self-register.</p>
         </div>
 
         {error && (

@@ -11,40 +11,49 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  const isPublicRoute =
-    path === '/login' ||
-    path === '/register' ||
-    path.startsWith('/auth/callback') ||
-    path === '/forgot-password' ||
-    path === '/reset-password'
+  const isPublicRoute = path === '/login' || path === '/register'
+  const isSetPasswordRoute = path === '/set-password'
+  const isAuthCallback = path.startsWith('/auth/')
+  
+  // Auth callback must always proceed — it exchanges tokens for sessions
+  // (e.g., tenant invite links must work even if a landlord is logged in)
+  if (isAuthCallback) {
+    return response
+  }
 
-  const isLandlordRoute =
-    path.startsWith('/dashboard') ||
-    path.startsWith('/buildings') ||
-    path.startsWith('/units') ||
-    path.startsWith('/maintenance')
+  // Routes restricted to landlords only
+  const isLandlordRoute = path.startsWith('/dashboard') || path.startsWith('/buildings') || path.startsWith('/units') || path.startsWith('/tenants') || path.startsWith('/leases')
 
-  const isTenantRoute = path.startsWith('/tenant')
-
-  const isProtectedRoute = isLandlordRoute || isTenantRoute
-
-  if (!user && isProtectedRoute) {
+  if (!user && isLandlordRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && (path === '/login' || path === '/register')) {
+  if (!user && isSetPasswordRoute) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  const isTenantRoute = path.startsWith('/portal')
+
+  if (!user && isTenantRoute) {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  if (user && isPublicRoute) {
+    // Optimistic check: get user role from profiles table to determine where to redirect from public pages
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
-
-    const destination =
-      profile?.role === 'tenant' ? '/tenant/maintenance' : '/dashboard'
-    return NextResponse.redirect(new URL(destination, request.url))
+      
+    if (profile?.role === 'tenant') {
+      return NextResponse.redirect(new URL('/portal', request.url))
+    }
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   if (user && isLandlordRoute) {
+    // Optimistic check: get user role from profiles table
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
@@ -61,6 +70,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && isTenantRoute) {
+    // Optimistic check for tenant route
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
