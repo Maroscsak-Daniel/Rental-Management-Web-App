@@ -134,31 +134,31 @@ export default async function MaintenancePage({
                       <tr>
                         <th
                           scope="col"
-                          className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:pl-6"
+                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6"
                         >
                           Unit
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                         >
                           Description
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                         >
                           Status
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                         >
                           Days Open
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                         >
                           Reported
                         </th>
@@ -170,7 +170,7 @@ export default async function MaintenancePage({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 bg-white">
+                    <tbody className="divide-y divide-zinc-800 bg-zinc-900/50">
                       {(requests as MaintenanceListRow[] | null)?.map(
                         (request) => {
                           const daysOpen = computeDaysOpen(
@@ -178,28 +178,24 @@ export default async function MaintenancePage({
                             request.status,
                             request.resolved_at
                           )
-                          const stale = isOverdueOpenRequest(
+                          const overdue = isOverdueOpenRequest(
                             request.status,
                             daysOpen
                           )
                           const unitLabel = `${request.units.buildings.name} — Floor ${request.units.floor || 'N/A'}`
-                          const truncated =
-                            request.description.length > 80
-                              ? request.description.slice(0, 80) + '…'
-                              : request.description
 
                           return (
                             <tr
                               key={request.id}
-                              className={`transition-colors ${stale ? 'bg-red-500/5 hover:bg-red-500/10' : 'hover:bg-slate-50'}`}
+                              className={`hover:bg-zinc-800/50 ${overdue ? 'bg-red-500/5' : ''}`}
                             >
-                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
                                 <div className="flex items-center gap-2">
-                                  {stale && (
+                                  {overdue && (
                                     <span
-                                      title="Open more than 7 days without resolution"
+                                      title="Open more than 7 days"
                                       className="text-red-400"
-                                      aria-label="Stale request"
+                                      aria-hidden
                                     >
                                       <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -211,7 +207,6 @@ export default async function MaintenancePage({
                                         strokeWidth="2"
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        aria-hidden
                                       >
                                         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
                                         <path d="M12 9v4" />
@@ -227,8 +222,8 @@ export default async function MaintenancePage({
                                   </Link>
                                 </div>
                               </td>
-                              <td className="px-3 py-4 text-sm text-slate-500">
-                                {truncated}
+                              <td className="max-w-xs truncate px-3 py-4 text-sm text-zinc-300">
+                                {request.description}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm">
                                 <MaintenanceStatusBadge
@@ -238,15 +233,15 @@ export default async function MaintenancePage({
                               <td className="whitespace-nowrap px-3 py-4 text-sm">
                                 <span
                                   className={
-                                    stale
+                                    overdue
                                       ? 'inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-500/20'
-                                      : 'text-slate-500'
+                                      : 'text-zinc-300'
                                   }
                                 >
                                   {daysOpen}
                                 </span>
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
                                 {new Date(
                                   request.reported_at
                                 ).toLocaleDateString()}
@@ -254,7 +249,7 @@ export default async function MaintenancePage({
                               <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                 <Link
                                   href={`/maintenance/${request.id}`}
-                                  className="text-slate-500 hover:text-slate-900"
+                                  className="text-zinc-400 hover:text-white"
                                 >
                                   View
                                 </Link>
@@ -267,9 +262,9 @@ export default async function MaintenancePage({
                         <tr>
                           <td
                             colSpan={6}
-                            className="py-8 text-center text-sm text-slate-400"
+                            className="py-8 text-center text-sm text-zinc-400"
                           >
-                            No maintenance requests found.
+                            No maintenance requests yet.
                           </td>
                         </tr>
                       )}

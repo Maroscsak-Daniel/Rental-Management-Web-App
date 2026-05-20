@@ -36,7 +36,7 @@ export default function LoginPage() {
           .single()
 
         if (profile?.role === 'tenant') {
-          router.push('/tenant/maintenance')
+          router.push('/tenant/portal')
         } else {
           router.push('/dashboard')
         }

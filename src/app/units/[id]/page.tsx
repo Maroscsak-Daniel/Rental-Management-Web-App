@@ -29,12 +29,11 @@ export default async function UnitDetailPage({
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="md:flex md:items-center md:justify-between mb-8 border-b border-slate-200 pb-5">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              {/* @ts-expect-error join type */}
-              Unit Detail: {formatUnitLabel(unit)}
+            <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
+              Unit Detail: {formatUnitLabel(unit as any)}
             </h2>
             <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
-              <div className="mt-2 flex items-center text-sm text-slate-500">
+              <div className="mt-2 flex items-center text-sm text-zinc-400">
                 Added {new Date(unit.created_at).toLocaleDateString()}
               </div>
             </div>
@@ -61,12 +60,10 @@ export default async function UnitDetailPage({
           <div className="px-4 py-6 sm:p-8">
             <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
               <div className="sm:col-span-1">
-                <dt className="text-sm font-medium text-slate-500">Building</dt>
-                <dd className="mt-1 text-sm text-slate-900">
-                  {/* @ts-expect-error join type */}
-                  <Link href={`/buildings/${unit.buildings.id}`} className="hover:underline">
-                    {/* @ts-expect-error join type */}
-                    {unit.buildings.name}
+                <dt className="text-sm font-medium text-zinc-400">Building</dt>
+                <dd className="mt-1 text-sm text-white">
+                  <Link href={`/buildings/${(unit.buildings as any).id}`} className="hover:underline">
+                    {(unit.buildings as any).name}
                   </Link>
                 </dd>
               </div>

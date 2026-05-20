@@ -1,11 +1,80 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export type TenantMaintenanceResult =
   | { success: true }
   | { error: string }
+
+export interface TenantMaintenanceRequest {
+  id: string
+  description: string
+  status: string
+  created_at: string
+  units: {
+    apartment_number: string | null
+    floor: string | null
+    buildings: {
+      name: string
+    }
+  } | null
+}
+
+/**
+ * Fetch all maintenance requests submitted by this tenant.
+ * Scoped via profiles.tenant_id → maintenance_requests.submitted_by_tenant_id.
+ */
+export async function getTenantMaintenanceRequests(): Promise<{
+  data: TenantMaintenanceRequest[]
+  error: string | null
+}> {
+  const supabase = await createClient()
+  const adminSupabase = createAdminClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { data: [], error: 'Not authenticated' }
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role, tenant_id')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile?.tenant_id || profile.role !== 'tenant') {
+    return { data: [], error: 'Only tenant accounts can view maintenance requests.' }
+  }
+
+  const { data: requests, error } = await adminSupabase
+    .from('maintenance_requests')
+    .select(`
+      id,
+      description,
+      status,
+      created_at,
+      units:unit_id (
+        apartment_number,
+        floor,
+        buildings:building_id (
+          name
+        )
+      )
+    `)
+    .eq('submitted_by_tenant_id', profile.tenant_id)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    return { data: [], error: error.message }
+  }
+
+  return { data: (requests as unknown as TenantMaintenanceRequest[]) ?? [], error: null }
+}
 
 export async function submitTenantMaintenanceRequest(
   formData: FormData

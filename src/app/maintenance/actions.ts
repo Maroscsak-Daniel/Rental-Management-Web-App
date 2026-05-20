@@ -7,6 +7,7 @@ import {
   isValidMaintenanceTransition,
 } from '@/lib/maintenance/state-machine'
 import { revalidatePath } from 'next/cache'
+import { resolveNotificationsByReference } from '@/lib/notifications/resolve'
 
 export type MaintenanceActionResult =
   | { success: true }
@@ -38,8 +39,7 @@ export async function createMaintenanceRequest(
     return { error: 'Invalid unit or you do not have permission.' }
   }
 
-  // @ts-expect-error nested join
-  if (unit.buildings.landlord_id !== user.id) {
+  if ((unit.buildings as any).landlord_id !== user.id) {
     return { error: 'Invalid unit or you do not have permission.' }
   }
 
@@ -116,8 +116,17 @@ export async function updateMaintenanceRequest(
 
   if (error) return { error: error.message }
 
+  if (status === 'in_progress' || status === 'resolved') {
+    await resolveNotificationsByReference({
+      landlordId: user.id,
+      type: 'maintenance_stale',
+      referenceId: id,
+    })
+  }
+
   revalidatePath('/maintenance')
   revalidatePath(`/maintenance/${id}`)
+  revalidatePath('/dashboard')
   return { success: true }
 }
 

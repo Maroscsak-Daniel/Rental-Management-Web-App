@@ -4,7 +4,7 @@ export type LeaseStatus = 'active' | 'expired' | 'terminated'
 export type InvoiceStatus = 'pending' | 'paid' | 'overdue'
 export type InvoiceType = 'rent' | 'utilities' | 'repairs' | 'other'
 export type MaintenanceStatus = 'open' | 'in_progress' | 'resolved'
-
+export type NotificationType = 'lease_expiry' | 'payment_overdue' | 'maintenance_stale'
 export interface Profile {
   id: string // UUID matches auth.users.id
   role: UserRole
@@ -108,4 +108,29 @@ export interface Payment {
   method: string
   payment_date: string
   created_at: string
+}
+
+export interface Notification {
+  id: string
+  landlord_id: string
+  type: NotificationType
+  reference_id: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface ExpiringLease extends Lease {
+  days_remaining: number
+  unit: {
+    id: string
+    floor: string | null
+    apartment_number?: string | null
+    buildings: { id: string; name: string }
+  }
+  tenant: {
+    id: string
+    first_name: string
+    last_name: string
+  }
 }

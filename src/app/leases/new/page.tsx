@@ -31,8 +31,7 @@ function LeaseForm() {
 
       if (tenantsRes.data) setTenants(tenantsRes.data)
       if (unitsRes.data) {
-        // @ts-expect-error join type
-        setUnits(unitsRes.data)
+        setUnits(unitsRes.data as unknown as typeof units)
         if (unitsRes.data.length > 0) {
           setSelectedRent(unitsRes.data[0].rent_amount)
         }

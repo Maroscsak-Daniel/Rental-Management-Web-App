@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { resolveNotificationsByReference } from '@/lib/notifications/resolve'
 
 export async function createLease(formData: FormData) {
   const supabase = await createClient()
@@ -126,6 +127,52 @@ export async function updateLease(id: string, formData: FormData) {
     return { error: 'End date must be after start date.' }
   }
 
+  // Auto-detect if lease should be expired
+  const status = new Date(endDate) < new Date() ? 'expired' : undefined
+
+  const updateData: Record<string, unknown> = {
+    start_date: startDate,
+    end_date: endDate,
+    rent_amount: rentAmount,
+  }
+
+  if (status) {
+    updateData.status = status
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  const { error } = await supabase
+    .from('leases')
+    .update(updateData)
+    .eq('id', id)
+    .eq('landlord_id', user.id)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  if (status === 'expired' && user) {
+    await resolveNotificationsByReference({
+      landlordId: user.id,
+      type: 'lease_expiry',
+      referenceId: id,
+    })
+  }
+
+  // If lease auto-expired, free up the unit
+  if (status === 'expired') {
+    const { data: lease } = await supabase
+      .from('leases')
+      .select('unit_id')
+      .eq('id', id)
+      .single()
   // Fetch current lease to know unit_id and previous status
   const { data: currentLease, error: fetchError } = await supabase
     .from('leases')
@@ -196,10 +243,17 @@ export async function terminateLease(id: string) {
     return { error: error.message }
   }
 
+  await resolveNotificationsByReference({
+    landlordId: user.id,
+    type: 'lease_expiry',
+    referenceId: id,
+  })
+
   // Set unit back to vacant
   await supabase.from('units').update({ status: 'vacant' }).eq('id', lease.unit_id)
 
   revalidatePath('/leases')
+  revalidatePath(`/leases/${id}`)
   revalidatePath('/tenants')
   revalidatePath(`/tenants/${lease.tenant_id}`)
   revalidatePath('/units')

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { resolveNotificationsByReference } from '@/lib/notifications/resolve'
 
 export async function createPayment(formData: FormData) {
   const supabase = await createClient()
@@ -77,6 +78,13 @@ export async function createPayment(formData: FormData) {
         .from('invoices')
         .update({ status: 'paid' })
         .eq('id', invoiceId)
+        .eq('landlord_id', invoice.landlord_id)
+
+      await resolveNotificationsByReference({
+        landlordId: invoice.landlord_id,
+        type: 'payment_overdue',
+        referenceId: invoiceId,
+      })
     }
   }
 

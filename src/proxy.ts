@@ -5,25 +5,30 @@ export async function proxy(request: NextRequest) {
   const { supabase, response } = createProxyClient(request)
 
   // Refresh session if expired - required for Server Components
+  // https://supabase.com/docs/guides/auth/server-side/nextjs
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
+  const isPublicRoute = path === '/login' || path === '/register'
+  const isForgotPasswordRoute = path === '/forgot-password'
+  const isResetPasswordRoute = path === '/reset-password'
+  const isSetPasswordRoute = path === '/set-password'
+  const isAuthCallback = path.startsWith('/auth/')
 
-  // Auth callback routes must always proceed — they exchange tokens for sessions
-  if (path.startsWith('/auth/')) {
+  // Auth callback must always proceed — it exchanges tokens for sessions
+  // (e.g., tenant invite links must work even if a landlord is logged in)
+  if (isAuthCallback) {
     return response
   }
 
-  const isPublicRoute =
-    path === '/login' ||
-    path === '/register' ||
-    path === '/forgot-password' ||
-    path === '/reset-password'
+  // Legacy /portal → redirect to /tenant/portal
+  if (path === '/portal') {
+    return NextResponse.redirect(new URL('/tenant/portal', request.url))
+  }
 
-  const isSetPasswordRoute = path === '/set-password'
-
+  // Routes restricted to landlords only
   const isLandlordRoute =
     path.startsWith('/dashboard') ||
     path.startsWith('/buildings') ||
@@ -31,58 +36,54 @@ export async function proxy(request: NextRequest) {
     path.startsWith('/tenants') ||
     path.startsWith('/leases') ||
     path.startsWith('/invoices') ||
+    path.startsWith('/maintenance') ||
     path.startsWith('/payments') ||
-    path.startsWith('/maintenance')
+    path.startsWith('/documents') ||
+    path.startsWith('/notifications')
 
-  // Use /tenant/ (with trailing slash) so /tenants doesn't match
+  // Routes restricted to tenants only
   const isTenantRoute = path.startsWith('/tenant/')
 
-  const isProtectedRoute = isLandlordRoute || isTenantRoute || isSetPasswordRoute
-
-  if (!user && isProtectedRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // --- Unauthenticated users ---
+  if (!user) {
+    if (isLandlordRoute || isTenantRoute || isSetPasswordRoute) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    // Allow public routes, forgot-password, reset-password, etc.
+    return response
   }
 
-  if (user && isPublicRoute) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+  // --- Authenticated users: fetch role once ---
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
 
-    const destination =
-      profile?.role === 'tenant' ? '/tenant/maintenance' : '/dashboard'
-    return NextResponse.redirect(new URL(destination, request.url))
+  if (profileError) {
+    console.error('Proxy profile fetch error:', profileError)
   }
 
-  if (user && isLandlordRoute) {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+  const role = profile?.role
 
-    if (error) {
-      console.error('Proxy profile fetch error:', error)
+  // Redirect logged-in users away from public routes
+  if (isPublicRoute || isForgotPasswordRoute || isResetPasswordRoute) {
+    if (role === 'tenant') {
+      return NextResponse.redirect(new URL('/tenant/portal', request.url))
     }
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
 
-    if (profile?.role !== 'landlord') {
-      return NextResponse.redirect(new URL('/unauthorized', request.url))
+  // Guard landlord routes — tenants cannot access
+  if (isLandlordRoute) {
+    if (role !== 'landlord') {
+      return NextResponse.redirect(new URL('/tenant/portal', request.url))
     }
   }
 
-  if (user && isTenantRoute) {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (error) {
-      console.error('Proxy profile fetch error:', error)
-    }
-
-    if (profile?.role !== 'tenant') {
+  // Guard tenant routes — landlords cannot access
+  if (isTenantRoute) {
+    if (role !== 'tenant') {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
   }
@@ -92,6 +93,13 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - api (API routes)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/).*)',
   ],
 }

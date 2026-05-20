@@ -70,8 +70,7 @@ export default async function UnitsPage() {
                         <tr key={unit.id} className="hover:bg-slate-50 transition-colors">
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
                             <Link href={`/buildings/${unit.building_id}`} className="hover:underline">
-                              {/* @ts-expect-error join type */}
-                              {unit.buildings.name}
+                              {(unit.buildings as any).name}
                             </Link>
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">

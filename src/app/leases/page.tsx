@@ -7,9 +7,11 @@ import { formatUnitLabel } from '@/lib/display'
 export default async function LeasesPage() {
   const supabase = await createClient()
 
-  const { data: leases, error } = await supabase
-    .from('leases')
-    .select(`
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  let query = supabase.from('leases').select(`
       *,
       tenants(first_name, last_name),
       units(
@@ -19,7 +21,14 @@ export default async function LeasesPage() {
         buildings(name)
       )
     `)
-    .order('created_at', { ascending: false })
+
+  if (user) {
+    query = query.eq('landlord_id', user.id)
+  }
+
+  const { data: leases, error } = await query.order('created_at', {
+    ascending: false,
+  })
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -69,7 +78,7 @@ export default async function LeasesPage() {
                   {leases?.map((lease) => (
                     <tr key={lease.id} className="hover:bg-slate-50 transition-colors">
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
-                        <Link href={`/tenants/${lease.tenant_id}`} className="hover:text-[#781C21] transition-colors">
+                        <Link href={`/leases/${lease.id}`} className="hover:text-[#781C21] transition-colors">
                           {lease.tenants?.first_name} {lease.tenants?.last_name}
                         </Link>
                       </td>

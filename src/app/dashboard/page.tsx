@@ -1,12 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import OccupancyWidget from './components/OccupancyWidget'
+import OutstandingPaymentsWidget from './components/OutstandingPaymentsWidget'
+import OpenMaintenanceWidget from './components/OpenMaintenanceWidget'
+import ExpiringLeasesWidget from './components/ExpiringLeasesWidget'
 import { formatUnitLabel } from '@/lib/display'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+export default function DashboardPage() {
   // Fetch summary stats
   const { count: buildingsCount } = await supabase
     .from('buildings')
@@ -57,45 +62,19 @@ export default async function DashboardPage() {
     .limit(5)
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 md:pl-64">
       <Navbar />
-      
+
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-8">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-8">
+          Dashboard
+        </h1>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          <div className="overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <dt className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">Buildings</dt>
-            <dd className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{buildingsCount || 0}</dd>
-          </div>
-
-          <div className="overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <dt className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">Total Units</dt>
-            <dd className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{unitsCount || 0}</dd>
-          </div>
-
-          <div className="overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <dt className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">Occupied</dt>
-            <dd className="mt-2 text-2xl font-bold tracking-tight text-emerald-600">{occupiedCount || 0}</dd>
-          </div>
-
-          <div className="overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <dt className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">Vacant</dt>
-            <dd className="mt-2 text-2xl font-bold tracking-tight text-amber-600">{vacantCount || 0}</dd>
-          </div>
-
-          <div className="overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <dt className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">Tenants</dt>
-            <dd className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{tenantsCount || 0}</dd>
-          </div>
-
-          <div className="overflow-hidden rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/60">
-            <dt className="truncate text-xs font-semibold uppercase tracking-wider text-slate-500">Active Leases</dt>
-            <dd className="mt-2 text-2xl font-bold tracking-tight text-slate-900">{activeLeaseCount || 0}</dd>
-          </div>
-        </div>
-
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <OccupancyWidget />
+          <OutstandingPaymentsWidget />
+          <OpenMaintenanceWidget />
+          <ExpiringLeasesWidget />
         {/* Expiring Leases */}
         <div className="mt-8 bg-white shadow-sm ring-1 ring-slate-200/60 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
