@@ -29,7 +29,7 @@ export default function NewMaintenancePage() {
         .order('floor')
 
       if (data) {
-        setUnits(data as UnitOption[])
+        setUnits(data as unknown as UnitOption[])
       }
       setFetchingUnits(false)
     }

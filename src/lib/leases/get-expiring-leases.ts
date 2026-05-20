@@ -17,6 +17,7 @@ type LeaseRow = Lease & {
   units: {
     id: string
     floor: string | null
+    apartment_number: string | null
     buildings: { id: string; name: string }
   }
   tenants: {
@@ -59,6 +60,7 @@ export async function getExpiringLeases(): Promise<{
       units!inner (
         id,
         floor,
+        apartment_number,
         buildings!inner (id, name)
       ),
       tenants!inner (
@@ -92,6 +94,7 @@ export async function getExpiringLeases(): Promise<{
     unit: {
       id: row.units.id,
       floor: row.units.floor,
+      apartment_number: row.units.apartment_number,
       buildings: {
         id: row.units.buildings.id,
         name: row.units.buildings.name,

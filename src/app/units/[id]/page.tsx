@@ -30,8 +30,7 @@ export default async function UnitDetailPage({
         <div className="md:flex md:items-center md:justify-between mb-8 border-b border-zinc-800 pb-5">
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
-              {/* @ts-expect-error join type */}
-              Unit Detail: {formatUnitLabel(unit)}
+              Unit Detail: {formatUnitLabel(unit as any)}
             </h2>
             <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
               <div className="mt-2 flex items-center text-sm text-zinc-400">
@@ -63,10 +62,8 @@ export default async function UnitDetailPage({
               <div className="sm:col-span-1">
                 <dt className="text-sm font-medium text-zinc-400">Building</dt>
                 <dd className="mt-1 text-sm text-white">
-                  {/* @ts-expect-error join type */}
-                  <Link href={`/buildings/${unit.buildings.id}`} className="hover:underline">
-                    {/* @ts-expect-error join type */}
-                    {unit.buildings.name}
+                  <Link href={`/buildings/${(unit.buildings as any).id}`} className="hover:underline">
+                    {(unit.buildings as any).name}
                   </Link>
                 </dd>
               </div>

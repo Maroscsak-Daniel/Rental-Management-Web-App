@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { resolveNotificationsByReference } from '@/lib/notifications/resolve'
 
 export async function createLease(formData: FormData) {
   const supabase = await createClient()
@@ -139,10 +140,30 @@ export async function updateLease(id: string, formData: FormData) {
     updateData.status = status
   }
 
-  const { error } = await supabase.from('leases').update(updateData).eq('id', id)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  const { error } = await supabase
+    .from('leases')
+    .update(updateData)
+    .eq('id', id)
+    .eq('landlord_id', user.id)
 
   if (error) {
     return { error: error.message }
+  }
+
+  if (status === 'expired' && user) {
+    await resolveNotificationsByReference({
+      landlordId: user.id,
+      type: 'lease_expiry',
+      referenceId: id,
+    })
   }
 
   // If lease auto-expired, free up the unit
@@ -167,11 +188,20 @@ export async function updateLease(id: string, formData: FormData) {
 export async function terminateLease(id: string) {
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
   // Get lease details first
   const { data: lease, error: fetchError } = await supabase
     .from('leases')
     .select('unit_id, tenant_id, status')
     .eq('id', id)
+    .eq('landlord_id', user.id)
     .single()
 
   if (fetchError || !lease) {
@@ -192,10 +222,17 @@ export async function terminateLease(id: string) {
     return { error: error.message }
   }
 
+  await resolveNotificationsByReference({
+    landlordId: user.id,
+    type: 'lease_expiry',
+    referenceId: id,
+  })
+
   // Set unit back to vacant
   await supabase.from('units').update({ status: 'vacant' }).eq('id', lease.unit_id)
 
   revalidatePath('/leases')
+  revalidatePath(`/leases/${id}`)
   revalidatePath('/tenants')
   revalidatePath(`/tenants/${lease.tenant_id}`)
   revalidatePath('/units')

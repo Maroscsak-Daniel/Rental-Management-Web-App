@@ -120,7 +120,7 @@ export default async function MaintenancePage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800 bg-zinc-900/50">
-                      {(requests as MaintenanceListRow[] | null)?.map(
+                      {(requests as unknown as MaintenanceListRow[] | null)?.map(
                         (request) => {
                           const daysOpen = computeDaysOpen(
                             request.reported_at,

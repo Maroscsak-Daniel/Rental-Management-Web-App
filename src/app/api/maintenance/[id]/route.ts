@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { MaintenanceStatus } from '@/lib/definitions'
 import { isValidMaintenanceTransition } from '@/lib/maintenance/state-machine'
+import { resolveNotificationsByReference } from '@/lib/notifications/resolve'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function PUT(
@@ -95,6 +96,14 @@ export async function PUT(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  if (status === 'in_progress' || status === 'resolved') {
+    await resolveNotificationsByReference({
+      landlordId: user.id,
+      type: 'maintenance_stale',
+      referenceId: id,
+    })
   }
 
   return NextResponse.json(data)

@@ -95,6 +95,7 @@ export async function getInvoices(month?: string, status?: string, tenantId?: st
       leases:lease_id (unit_id),
       payments (amount)
     `)
+    .eq('landlord_id', user.id)
     .order('due_date', { ascending: false })
 
   if (status && status !== 'all') {
