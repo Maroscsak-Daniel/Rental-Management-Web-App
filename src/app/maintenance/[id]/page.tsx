@@ -82,7 +82,7 @@ export default async function MaintenanceDetailPage({
   ]
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         {stale && (
@@ -110,14 +110,14 @@ export default async function MaintenanceDetailPage({
           </div>
         )}
 
-        <div className="md:flex md:items-center md:justify-between mb-8 border-b border-zinc-800 pb-5">
+        <div className="md:flex md:items-center md:justify-between mb-8 border-b border-slate-200 pb-5">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
+            <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:truncate sm:text-3xl sm:tracking-tight">
               Maintenance Request
             </h2>
             <div className="mt-2 flex items-center gap-3">
               <MaintenanceStatusBadge status={status} />
-              <span className="text-sm text-zinc-400">
+              <span className="text-sm text-slate-500">
                 {daysOpen} day{daysOpen !== 1 ? 's' : ''} open
               </span>
             </div>
@@ -125,7 +125,7 @@ export default async function MaintenanceDetailPage({
           <div className="mt-4 flex md:ml-4 md:mt-0">
             <Link
               href="/maintenance"
-              className="inline-flex items-center rounded-md bg-zinc-800 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-700"
+              className="inline-flex items-center rounded-md bg-white border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
             >
               Back to list
             </Link>
@@ -133,21 +133,21 @@ export default async function MaintenanceDetailPage({
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm">
             <div className="px-4 py-6 sm:p-8">
-              <h3 className="text-lg font-semibold text-white mb-6">Details</h3>
+              <h3 className="text-lg font-semibold text-slate-900 mb-6">Details</h3>
               <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <dt className="text-sm font-medium text-zinc-400">
+                  <dt className="text-sm font-medium text-slate-500">
                     Description
                   </dt>
-                  <dd className="mt-1 text-sm text-white whitespace-pre-wrap">
+                  <dd className="mt-1 text-sm text-slate-900 whitespace-pre-wrap">
                     {request.description}
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-400">Building</dt>
-                  <dd className="mt-1 text-sm text-white">
+                  <dt className="text-sm font-medium text-slate-500">Building</dt>
+                  <dd className="mt-1 text-sm text-slate-900">
                     <Link
                       href={`/buildings/${request.units.buildings.id}`}
                       className="hover:underline"
@@ -157,8 +157,8 @@ export default async function MaintenanceDetailPage({
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-400">Unit</dt>
-                  <dd className="mt-1 text-sm text-white">
+                  <dt className="text-sm font-medium text-slate-500">Unit</dt>
+                  <dd className="mt-1 text-sm text-slate-900">
                     <Link
                       href={`/units/${request.units.id}`}
                       className="hover:underline"
@@ -168,10 +168,10 @@ export default async function MaintenanceDetailPage({
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-400">
+                  <dt className="text-sm font-medium text-slate-500">
                     Submitted by
                   </dt>
-                  <dd className="mt-1 text-sm text-white">
+                  <dd className="mt-1 text-sm text-slate-900">
                     {request.tenants
                       ? formatTenantName(
                           request.tenants.first_name,
@@ -181,28 +181,28 @@ export default async function MaintenanceDetailPage({
                   </dd>
                 </div>
                 <div className="sm:col-span-1">
-                  <dt className="text-sm font-medium text-zinc-400">
+                  <dt className="text-sm font-medium text-slate-500">
                     Reported at
                   </dt>
-                  <dd className="mt-1 text-sm text-white">
+                  <dd className="mt-1 text-sm text-slate-900">
                     {new Date(request.reported_at).toLocaleString()}
                   </dd>
                 </div>
                 {request.resolved_at && (
                   <div className="sm:col-span-1">
-                    <dt className="text-sm font-medium text-zinc-400">
+                    <dt className="text-sm font-medium text-slate-500">
                       Resolved at
                     </dt>
-                    <dd className="mt-1 text-sm text-white">
+                    <dd className="mt-1 text-sm text-slate-900">
                       {new Date(request.resolved_at).toLocaleString()}
                     </dd>
                   </div>
                 )}
                 <div className="sm:col-span-2">
-                  <dt className="text-sm font-medium text-zinc-400">
+                  <dt className="text-sm font-medium text-slate-500">
                     Resolution notes
                   </dt>
-                  <dd className="mt-1 text-sm text-white whitespace-pre-wrap">
+                  <dd className="mt-1 text-sm text-slate-900 whitespace-pre-wrap">
                     {request.resolution_notes || '—'}
                   </dd>
                 </div>
@@ -211,22 +211,22 @@ export default async function MaintenanceDetailPage({
           </div>
 
           <div className="space-y-8">
-            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 shadow-sm">
+            <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm">
               <div className="px-4 py-6 sm:p-8">
-                <h3 className="text-lg font-semibold text-white mb-6">
+                <h3 className="text-lg font-semibold text-slate-900 mb-6">
                   History
                 </h3>
-                <ol className="relative border-l border-zinc-700 ml-3">
+                <ol className="relative border-l border-slate-200 ml-3">
                   {timeline.map((event, index) => (
                     <li key={index} className="mb-8 ml-6">
                       <span className="absolute -left-1.5 flex h-3 w-3 rounded-full bg-[#617891]" />
-                      <h4 className="text-sm font-semibold text-white">
+                      <h4 className="text-sm font-semibold text-slate-900">
                         {event.label}
                       </h4>
-                      <time className="block text-xs text-zinc-500 mb-1">
+                      <time className="block text-xs text-slate-400 mb-1">
                         {new Date(event.date).toLocaleString()}
                       </time>
-                      <p className="text-sm text-zinc-400">{event.detail}</p>
+                      <p className="text-sm text-slate-500">{event.detail}</p>
                     </li>
                   ))}
                 </ol>
@@ -234,7 +234,7 @@ export default async function MaintenanceDetailPage({
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 Update status
               </h3>
               <MaintenanceUpdateForm

@@ -47,13 +47,13 @@ export default function MaintenanceUpdateForm({
 
   if (isResolved) {
     return (
-      <div className="rounded-lg border border-zinc-800 bg-zinc-900/30 p-4">
-        <p className="text-sm text-zinc-400">
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <p className="text-sm text-slate-500">
           This request is resolved. Status and resolution notes cannot be
           changed.
         </p>
         {currentNotes && (
-          <p className="mt-3 text-sm text-white whitespace-pre-wrap">
+          <p className="mt-3 text-sm text-slate-900 whitespace-pre-wrap">
             {currentNotes}
           </p>
         )}
@@ -64,13 +64,13 @@ export default function MaintenanceUpdateForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-zinc-900/50 shadow-sm ring-1 ring-white/10 sm:rounded-xl"
+      className="bg-white shadow-sm ring-1 ring-slate-200/60 sm:rounded-xl"
     >
       <div className="px-4 py-6 sm:p-8 space-y-6">
         <div>
           <label
             htmlFor="status"
-            className="block text-sm font-medium leading-6 text-white"
+            className="block text-sm font-medium leading-6 text-slate-700"
           >
             Status
           </label>
@@ -79,7 +79,7 @@ export default function MaintenanceUpdateForm({
               id="status"
               name="status"
               defaultValue={currentStatus}
-              className="block w-full rounded-md border-0 bg-white/5 py-2 pl-3 pr-10 text-white ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm [&>option]:text-black"
+              className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
             >
               {allowedStatuses.map((status) => (
                 <option key={status} value={status}>
@@ -93,7 +93,7 @@ export default function MaintenanceUpdateForm({
         <div>
           <label
             htmlFor="resolution_notes"
-            className="block text-sm font-medium leading-6 text-white"
+            className="block text-sm font-medium leading-6 text-slate-700"
           >
             Resolution Notes
           </label>
@@ -103,7 +103,7 @@ export default function MaintenanceUpdateForm({
               name="resolution_notes"
               rows={4}
               defaultValue={currentNotes ?? ''}
-              className="block w-full rounded-md border-0 bg-white/5 py-2 px-3 text-white ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm"
+              className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
               placeholder="Notes about how the issue was resolved..."
             />
           </div>
@@ -118,11 +118,11 @@ export default function MaintenanceUpdateForm({
         </div>
       )}
 
-      <div className="flex items-center justify-end border-t border-white/10 px-4 py-4 sm:px-8">
+      <div className="flex items-center justify-end border-t border-slate-200 px-4 py-4 sm:px-8 bg-slate-50 rounded-b-xl">
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-zinc-200 disabled:opacity-50"
+          className="rounded-md bg-[#781C21] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#61161a] disabled:opacity-50"
         >
           {loading ? 'Saving...' : 'Update Request'}
         </button>

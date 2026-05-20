@@ -8,7 +8,7 @@ type Building = { id: string; name: string }
 type Unit = { id: string; floor: string | null; building_id: string }
 
 const selectClass =
-  'rounded-md border-0 bg-white/5 py-2 pl-3 pr-10 text-white ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm [&>option]:text-black'
+  'rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-gray-900 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm'
 
 export default function MaintenanceFilters({
   buildings,
