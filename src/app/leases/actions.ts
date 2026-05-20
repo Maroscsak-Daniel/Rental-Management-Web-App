@@ -126,36 +126,40 @@ export async function updateLease(id: string, formData: FormData) {
     return { error: 'End date must be after start date.' }
   }
 
-  // Auto-detect if lease should be expired
-  const status = new Date(endDate) < new Date() ? 'expired' : undefined
+  // Fetch current lease to know unit_id and previous status
+  const { data: currentLease, error: fetchError } = await supabase
+    .from('leases')
+    .select('unit_id, status')
+    .eq('id', id)
+    .single()
 
-  const updateData: Record<string, unknown> = {
-    start_date: startDate,
-    end_date: endDate,
-    rent_amount: rentAmount,
+  if (fetchError || !currentLease) {
+    return { error: 'Lease not found.' }
   }
 
-  if (status) {
-    updateData.status = status
-  }
+  // Derive status from end date: past → expired, future → active
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const endDateObj = new Date(endDate)
+  endDateObj.setHours(0, 0, 0, 0)
+  const newStatus = endDateObj < today ? 'expired' : 'active'
 
-  const { error } = await supabase.from('leases').update(updateData).eq('id', id)
+  const { error } = await supabase
+    .from('leases')
+    .update({ start_date: startDate, end_date: endDate, rent_amount: rentAmount, status: newStatus })
+    .eq('id', id)
 
   if (error) {
     return { error: error.message }
   }
 
-  // If lease auto-expired, free up the unit
-  if (status === 'expired') {
-    const { data: lease } = await supabase
-      .from('leases')
-      .select('unit_id')
-      .eq('id', id)
-      .single()
-
-    if (lease) {
-      await supabase.from('units').update({ status: 'vacant' }).eq('id', lease.unit_id)
-    }
+  // Sync unit occupancy when status changes
+  const wasActive = currentLease.status === 'active'
+  const isNowActive = newStatus === 'active'
+  if (!wasActive && isNowActive) {
+    await supabase.from('units').update({ status: 'occupied' }).eq('id', currentLease.unit_id)
+  } else if (wasActive && !isNowActive) {
+    await supabase.from('units').update({ status: 'vacant' }).eq('id', currentLease.unit_id)
   }
 
   revalidatePath('/leases')

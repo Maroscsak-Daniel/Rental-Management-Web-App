@@ -36,7 +36,6 @@ export default async function MaintenancePage({
 
   if (!user) redirect('/login')
 
-  // Explicitly scope to this landlord — no reliance on RLS for cross-landlord isolation.
   const { data: buildings } = await supabase
     .from('buildings')
     .select('id, name')
@@ -91,22 +90,22 @@ export default async function MaintenancePage({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
               Maintenance
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-slate-500">
               Track and resolve maintenance requests across your portfolio.
             </p>
           </div>
           <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
             <Link
               href="/maintenance/new"
-              className="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-black shadow-sm hover:bg-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="block rounded-md bg-[#781C21] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#61161a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#781C21]"
             >
               New Request
             </Link>
@@ -129,37 +128,37 @@ export default async function MaintenancePage({
           <div className="mt-6 flow-root">
             <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <div className="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-zinc-800">
-                    <thead className="bg-zinc-900">
+                <div className="overflow-hidden shadow-sm ring-1 ring-slate-200/60 sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
                       <tr>
                         <th
                           scope="col"
-                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6"
+                          className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:pl-6"
                         >
                           Unit
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
                         >
                           Description
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
                         >
                           Status
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
                         >
                           Days Open
                         </th>
                         <th
                           scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          className="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
                         >
                           Reported
                         </th>
@@ -171,7 +170,7 @@ export default async function MaintenancePage({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-800 bg-zinc-900/50">
+                    <tbody className="divide-y divide-slate-100 bg-white">
                       {(requests as MaintenanceListRow[] | null)?.map(
                         (request) => {
                           const daysOpen = computeDaysOpen(
@@ -192,9 +191,9 @@ export default async function MaintenancePage({
                           return (
                             <tr
                               key={request.id}
-                              className={`hover:bg-zinc-800/50 ${stale ? 'bg-red-500/5' : ''}`}
+                              className={`transition-colors ${stale ? 'bg-red-500/5 hover:bg-red-500/10' : 'hover:bg-slate-50'}`}
                             >
-                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6">
                                 <div className="flex items-center gap-2">
                                   {stale && (
                                     <span
@@ -228,7 +227,7 @@ export default async function MaintenancePage({
                                   </Link>
                                 </div>
                               </td>
-                              <td className="px-3 py-4 text-sm text-zinc-300">
+                              <td className="px-3 py-4 text-sm text-slate-500">
                                 {truncated}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm">
@@ -241,13 +240,13 @@ export default async function MaintenancePage({
                                   className={
                                     stale
                                       ? 'inline-flex items-center rounded-md bg-red-500/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-500/20'
-                                      : 'text-zinc-300'
+                                      : 'text-slate-500'
                                   }
                                 >
                                   {daysOpen}
                                 </span>
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                                 {new Date(
                                   request.reported_at
                                 ).toLocaleDateString()}
@@ -255,7 +254,7 @@ export default async function MaintenancePage({
                               <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                                 <Link
                                   href={`/maintenance/${request.id}`}
-                                  className="text-zinc-400 hover:text-white"
+                                  className="text-slate-500 hover:text-slate-900"
                                 >
                                   View
                                 </Link>
@@ -268,7 +267,7 @@ export default async function MaintenancePage({
                         <tr>
                           <td
                             colSpan={6}
-                            className="py-8 text-center text-sm text-zinc-400"
+                            className="py-8 text-center text-sm text-slate-400"
                           >
                             No maintenance requests found.
                           </td>
