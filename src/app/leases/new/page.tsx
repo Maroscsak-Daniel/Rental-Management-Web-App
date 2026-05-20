@@ -25,7 +25,7 @@ function LeaseForm() {
     async function loadData() {
       const [tenantsRes, unitsRes] = await Promise.all([
         supabase.from('tenants').select('id, first_name, last_name').order('first_name'),
-        supabase.from('units').select('id, floor, rent_amount, buildings(name)').eq('status', 'vacant').order('floor'),
+        supabase.from('units').select('id, floor, rent_amount, buildings(name)').order('floor'),
       ])
 
       if (tenantsRes.data) setTenants(tenantsRes.data)
@@ -82,7 +82,7 @@ function LeaseForm() {
   if (units.length === 0) {
     return (
       <div className="text-center py-10">
-        <p className="text-slate-600 mb-3">No vacant units available. All units are occupied.</p>
+        <p className="text-slate-600 mb-3">You need to add a unit to your portfolio first.</p>
         <Link href="/units" className="text-[#781C21] font-medium hover:underline">
           View Units →
         </Link>
@@ -115,7 +115,7 @@ function LeaseForm() {
 
           <div>
             <label htmlFor="unit_id" className="block text-sm font-medium text-slate-700 mb-1.5">
-              Unit <span className="text-slate-400 font-normal">(vacant only)</span>
+              Unit
             </label>
             <select
               id="unit_id"

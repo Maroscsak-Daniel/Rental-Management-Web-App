@@ -33,19 +33,29 @@ export async function createLease(formData: FormData) {
     return { error: 'Not authenticated' }
   }
 
-  // Verify unit is vacant
-  const { data: unit, error: unitError } = await supabase
-    .from('units')
-    .select('id, status')
-    .eq('id', unitId)
-    .single()
+  // Verify unit availability by checking for overlapping active leases
+  const { data: activeLeasesForUnit, error: unitLeaseError } = await supabase
+    .from('leases')
+    .select('id, start_date, end_date')
+    .eq('unit_id', unitId)
+    .eq('status', 'active')
 
-  if (unitError || !unit) {
-    return { error: 'Invalid unit selected.' }
+  if (unitLeaseError) {
+    return { error: 'Failed to verify unit availability.' }
   }
 
-  if (unit.status === 'occupied') {
-    return { error: 'This unit already has an active tenant. Choose a vacant unit.' }
+  const newStart = new Date(startDate)
+  const newEnd = new Date(endDate)
+
+  if (activeLeasesForUnit) {
+    for (const lease of activeLeasesForUnit) {
+      const existingStart = new Date(lease.start_date)
+      const existingEnd = new Date(lease.end_date)
+      // Two date ranges overlap if (Start A < End B) and (End A > Start B)
+      if (existingStart < newEnd && existingEnd > newStart) {
+        return { error: 'This unit is already booked for the selected dates. Please choose different dates or a different unit.' }
+      }
+    }
   }
 
   // Verify tenant belongs to this landlord
