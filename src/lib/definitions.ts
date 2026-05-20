@@ -1,5 +1,9 @@
 export type UserRole = 'landlord' | 'tenant'
 export type UnitStatus = 'occupied' | 'vacant'
+export type LeaseStatus = 'active' | 'expired' | 'terminated'
+export type InvoiceStatus = 'pending' | 'paid' | 'overdue'
+export type InvoiceType = 'rent' | 'utilities' | 'repairs' | 'other'
+export type MaintenanceStatus = 'open' | 'in_progress' | 'resolved'
 
 export interface Profile {
   id: string // UUID matches auth.users.id
@@ -37,9 +41,6 @@ export interface Unit {
   created_at: string
 }
 
-export type MaintenanceStatus = 'open' | 'in_progress' | 'resolved'
-export type LeaseStatus = 'active' | 'expired' | 'terminated'
-
 export interface MaintenanceRequest {
   id: string
   unit_id: string
@@ -72,4 +73,37 @@ export interface ExpiringLease extends Lease {
     buildings: { id: string; name: string }
   }
   tenant: Pick<Tenant, 'id' | 'first_name' | 'last_name'>
+}
+
+export interface TenantDocument {
+  id: string // UUID
+  landlord_id: string // UUID
+  tenant_id: string | null
+  unit_id: string | null
+  file_name: string
+  file_path: string // Supabase Storage path
+  file_size: number // bytes
+  mime_type: string
+  created_at: string
+}
+
+export interface Invoice {
+  id: string
+  landlord_id: string
+  tenant_id: string
+  lease_id: string | null
+  amount: number
+  status: InvoiceStatus
+  due_date: string
+  category: string
+  created_at: string
+}
+
+export interface Payment {
+  id: string
+  invoice_id: string
+  amount: number
+  method: string
+  payment_date: string
+  created_at: string
 }
