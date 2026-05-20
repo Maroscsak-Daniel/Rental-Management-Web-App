@@ -1,6 +1,4 @@
-# Test Report
-
-This document contains the execution log for the Rental Management Web App tests.
+# Phase 1 Testing Report
 
 ## Authentication & Routing Tests
 
