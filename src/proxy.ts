@@ -5,34 +5,45 @@ export async function proxy(request: NextRequest) {
   const { supabase, response } = createProxyClient(request)
 
   // Refresh session if expired - required for Server Components
-  // https://supabase.com/docs/guides/auth/server-side/nextjs
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
+
+  // Auth callback routes must always proceed — they exchange tokens for sessions
+  if (path.startsWith('/auth/')) {
+    return response
+  }
+
   const isPublicRoute =
     path === '/login' ||
     path === '/register' ||
-    path.startsWith('/auth/callback') ||
     path === '/forgot-password' ||
     path === '/reset-password'
+
+  const isSetPasswordRoute = path === '/set-password'
 
   const isLandlordRoute =
     path.startsWith('/dashboard') ||
     path.startsWith('/buildings') ||
     path.startsWith('/units') ||
+    path.startsWith('/tenants') ||
+    path.startsWith('/leases') ||
+    path.startsWith('/invoices') ||
+    path.startsWith('/payments') ||
     path.startsWith('/maintenance')
 
-  const isTenantRoute = path.startsWith('/tenant')
+  // Use /tenant/ (with trailing slash) so /tenants doesn't match
+  const isTenantRoute = path.startsWith('/tenant/')
 
-  const isProtectedRoute = isLandlordRoute || isTenantRoute
+  const isProtectedRoute = isLandlordRoute || isTenantRoute || isSetPasswordRoute
 
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && (path === '/login' || path === '/register')) {
+  if (user && isPublicRoute) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -81,13 +92,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     * - api (API routes, optional if you have them)
-     */
     '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 }

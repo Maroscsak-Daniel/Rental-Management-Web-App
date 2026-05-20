@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import MaintenanceStatusBadge from '@/components/MaintenanceStatusBadge'
 import { MaintenanceStatus } from '@/lib/definitions'
-import { computeDaysOpen } from '@/lib/maintenance/days-open'
+import { computeDaysOpen, isOverdueOpenRequest } from '@/lib/maintenance/days-open'
 import { MAINTENANCE_STATUS_LABELS } from '@/lib/maintenance/state-machine'
 import MaintenanceUpdateForm from './MaintenanceUpdateForm'
 import { formatTenantName } from '@/lib/tenants/format-name'
@@ -17,6 +17,12 @@ export default async function MaintenanceDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) notFound()
+
   const { data: request, error } = await supabase
     .from('maintenance_requests')
     .select(
@@ -25,7 +31,7 @@ export default async function MaintenanceDetailPage({
       units!inner (
         id,
         floor,
-        buildings!inner (id, name)
+        buildings!inner (id, name, landlord_id)
       ),
       tenants (id, first_name, last_name)
     `
@@ -37,12 +43,17 @@ export default async function MaintenanceDetailPage({
     notFound()
   }
 
+  if ((request.units.buildings as { landlord_id: string }).landlord_id !== user.id) {
+    notFound()
+  }
+
   const status = request.status as MaintenanceStatus
   const daysOpen = computeDaysOpen(
     request.reported_at,
     request.status,
     request.resolved_at
   )
+  const stale = isOverdueOpenRequest(status, daysOpen)
 
   const timeline = [
     {
@@ -74,6 +85,31 @@ export default async function MaintenanceDetailPage({
     <div className="min-h-screen bg-zinc-950">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+        {stale && (
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+              <path d="M12 9v4" />
+              <path d="M12 17h.01" />
+            </svg>
+            <span>
+              This request has been open for <strong>{daysOpen} days</strong>{' '}
+              without resolution.
+            </span>
+          </div>
+        )}
+
         <div className="md:flex md:items-center md:justify-between mb-8 border-b border-zinc-800 pb-5">
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">

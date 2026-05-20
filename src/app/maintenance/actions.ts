@@ -105,7 +105,7 @@ export async function updateMaintenanceRequest(
   if (status === 'resolved') {
     updatePayload.resolved_at = new Date().toISOString()
     updatePayload.resolution_notes = resolution_notes
-  } else if (currentStatus !== 'resolved') {
+  } else {
     updatePayload.resolution_notes = resolution_notes
   }
 
