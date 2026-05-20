@@ -5,6 +5,7 @@ import { formatUnitLabel } from '@/lib/display'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
   // Fetch summary stats
   const { count: buildingsCount } = await supabase
@@ -35,8 +36,10 @@ export default async function DashboardPage() {
     .eq('status', 'active')
 
   // Leases expiring within 30 days
+  const today = new Date().toISOString().split('T')[0]
   const thirtyDaysFromNow = new Date()
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
+  const thirtyDaysFromNowStr = thirtyDaysFromNow.toISOString().split('T')[0]
 
   const { data: expiringLeases } = await supabase
     .from('leases')
@@ -46,8 +49,10 @@ export default async function DashboardPage() {
       tenants(first_name, last_name),
       units(floor, apartment_number, buildings(name))
     `)
+    .eq('landlord_id', user?.id)
     .eq('status', 'active')
-    .lte('end_date', thirtyDaysFromNow.toISOString().split('T')[0])
+    .gte('end_date', today)
+    .lte('end_date', thirtyDaysFromNowStr)
     .order('end_date', { ascending: true })
     .limit(5)
 
@@ -112,7 +117,7 @@ export default async function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {expiringLeases.map((lease) => {
-                    const daysLeft = Math.ceil(
+                    const daysLeft = Math.floor(
                       (new Date(lease.end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
                     )
                     return (
