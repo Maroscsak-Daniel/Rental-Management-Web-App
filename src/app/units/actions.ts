@@ -7,7 +7,8 @@ import { UnitStatus } from '@/lib/definitions'
 export async function createUnit(formData: FormData) {
   const supabase = await createClient()
   const building_id = formData.get('building_id') as string
-  const floor = formData.get('floor') as string || null
+  const floor = (formData.get('floor') as string) || null
+  const apartment_number = (formData.get('apartment_number') as string) || null
   const size_sqm = formData.get('size_sqm') ? parseFloat(formData.get('size_sqm') as string) : null
   const rent_amount = parseFloat(formData.get('rent_amount') as string)
   const status = formData.get('status') as UnitStatus || 'vacant'
@@ -37,6 +38,7 @@ export async function createUnit(formData: FormData) {
   const { error } = await supabase.from('units').insert({
     building_id,
     floor,
+    apartment_number,
     size_sqm,
     rent_amount,
     status
@@ -54,7 +56,8 @@ export async function createUnit(formData: FormData) {
 export async function updateUnit(id: string, formData: FormData) {
   const supabase = await createClient()
   const building_id = formData.get('building_id') as string
-  const floor = formData.get('floor') as string || null
+  const floor = (formData.get('floor') as string) || null
+  const apartment_number = (formData.get('apartment_number') as string) || null
   const size_sqm = formData.get('size_sqm') ? parseFloat(formData.get('size_sqm') as string) : null
   const rent_amount = parseFloat(formData.get('rent_amount') as string)
   const status = formData.get('status') as UnitStatus
@@ -86,6 +89,7 @@ export async function updateUnit(id: string, formData: FormData) {
     .update({ 
       building_id,
       floor,
+      apartment_number,
       size_sqm,
       rent_amount,
       status

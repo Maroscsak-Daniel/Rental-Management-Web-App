@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import DocumentUpload from '@/components/DocumentUpload'
+import { formatUnitLabel } from '@/lib/display'
 
 export default async function TenantProfilePage({
   params,
@@ -27,6 +28,7 @@ export default async function TenantProfilePage({
         units(
           id,
           floor,
+          apartment_number,
           buildings(name)
         )
       )
@@ -132,7 +134,7 @@ export default async function TenantProfilePage({
                 <p className="mt-0.5 text-sm text-slate-900">
                   {activeLease ? (
                     <>
-                      {activeLease.units?.floor || 'N/A'} - {activeLease.units?.buildings?.name || 'N/A'}
+                      {formatUnitLabel(activeLease.units)}
                     </>
                   ) : (
                     '—'
@@ -218,10 +220,10 @@ export default async function TenantProfilePage({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {tenant.leases?.map((lease: { id: string; start_date: string; end_date: string; rent_amount: number; status: string; units: { floor: string | null; buildings: { name: string } | null } | null }) => (
+                {tenant.leases?.map((lease: { id: string; start_date: string; end_date: string; rent_amount: number; status: string; units: { floor: string | null; apartment_number: string | null; buildings: { name: string } | null } | null }) => (
                   <tr key={lease.id} className="hover:bg-slate-50 transition-colors">
                     <td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm text-slate-900 sm:pl-4">
-                      {lease.units?.floor || 'N/A'} - {lease.units?.buildings?.name || 'N/A'}
+                      {lease.units ? formatUnitLabel(lease.units) : 'N/A'}
                     </td>
                     <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">
                       {new Date(lease.start_date).toLocaleDateString()}

@@ -14,6 +14,7 @@ export default function EditBuildingPage({
 }) {
   const { id } = use(params)
   const [name, setName] = useState('')
+  const [address, setAddress] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -24,7 +25,7 @@ export default function EditBuildingPage({
     async function loadBuilding() {
       const { data, error } = await supabase
         .from('buildings')
-        .select('name')
+        .select('name, address')
         .eq('id', id)
         .single()
       
@@ -32,6 +33,7 @@ export default function EditBuildingPage({
         setError('Failed to load building data')
       } else if (data) {
         setName(data.name)
+        setAddress(data.address)
       }
       setFetching(false)
     }
@@ -106,6 +108,27 @@ export default function EditBuildingPage({
                       autoComplete="off"
                       className="flex-1 border-0 bg-transparent py-1.5 pl-3 text-white focus:ring-0 sm:text-sm sm:leading-6"
                       placeholder="Sunset Towers"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="sm:col-span-4">
+                <label htmlFor="address" className="block text-sm font-medium leading-6 text-white">
+                  Address
+                </label>
+                <div className="mt-2">
+                  <div className="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-white">
+                    <input
+                      type="text"
+                      name="address"
+                      id="address"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      autoComplete="street-address"
+                      className="flex-1 border-0 bg-transparent py-1.5 pl-3 text-white focus:ring-0 sm:text-sm sm:leading-6"
+                      placeholder="Str. Unirii, Nr. 1, City Cluj-Napoca"
                       required
                     />
                   </div>

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { terminateLease } from './actions'
+import { formatUnitLabel } from '@/lib/display'
 
 export default async function LeasesPage() {
   const supabase = await createClient()
@@ -14,6 +15,7 @@ export default async function LeasesPage() {
       units(
         id,
         floor,
+        apartment_number,
         buildings(name)
       )
     `)
@@ -72,7 +74,7 @@ export default async function LeasesPage() {
                         </Link>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                        {lease.units?.floor || 'N/A'} - {lease.units?.buildings?.name || 'N/A'}
+                        {lease.units ? formatUnitLabel(lease.units) : 'N/A'}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                         {new Date(lease.start_date).toLocaleDateString()}

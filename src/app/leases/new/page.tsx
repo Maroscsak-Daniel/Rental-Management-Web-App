@@ -6,12 +6,13 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { createLease } from '../actions'
 import { createClient } from '@/lib/supabase/client'
+import { formatUnitLabel } from '@/lib/display'
 
 function LeaseForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [tenants, setTenants] = useState<{ id: string; first_name: string; last_name: string }[]>([])
-  const [units, setUnits] = useState<{ id: string; floor: string | null; rent_amount: number; buildings: { name: string } }[]>([])
+  const [units, setUnits] = useState<{ id: string; floor: string | null; apartment_number: string | null; rent_amount: number; buildings: { name: string } }[]>([])
   const [fetching, setFetching] = useState(true)
   const [selectedRent, setSelectedRent] = useState<number>(0)
 
@@ -25,7 +26,7 @@ function LeaseForm() {
     async function loadData() {
       const [tenantsRes, unitsRes] = await Promise.all([
         supabase.from('tenants').select('id, first_name, last_name').order('first_name'),
-        supabase.from('units').select('id, floor, rent_amount, buildings(name)').order('floor'),
+        supabase.from('units').select('id, floor, apartment_number, rent_amount, buildings(name)').order('floor'),
       ])
 
       if (tenantsRes.data) setTenants(tenantsRes.data)
@@ -126,7 +127,7 @@ function LeaseForm() {
             >
               {units.map((u) => (
                 <option key={u.id} value={u.id}>
-                  {u.floor || 'N/A'} - {u.buildings?.name || 'N/A'} (${u.rent_amount}/mo)
+                  {formatUnitLabel(u)} (${u.rent_amount}/mo)
                 </option>
               ))}
             </select>
