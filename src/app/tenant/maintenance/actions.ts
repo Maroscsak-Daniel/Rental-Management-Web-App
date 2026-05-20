@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export type TenantMaintenanceResult =
@@ -30,6 +31,7 @@ export async function getTenantMaintenanceRequests(): Promise<{
   error: string | null
 }> {
   const supabase = await createClient()
+  const adminSupabase = createAdminClient()
 
   const {
     data: { user },
@@ -49,7 +51,7 @@ export async function getTenantMaintenanceRequests(): Promise<{
     return { data: [], error: 'Only tenant accounts can view maintenance requests.' }
   }
 
-  const { data: requests, error } = await supabase
+  const { data: requests, error } = await adminSupabase
     .from('maintenance_requests')
     .select(`
       id,

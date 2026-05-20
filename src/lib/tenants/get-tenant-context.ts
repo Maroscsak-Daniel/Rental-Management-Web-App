@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 
 export interface TenantContext {
   supabase: Awaited<ReturnType<typeof createClient>>
+  adminSupabase: ReturnType<typeof createAdminClient>
   userId: string
   tenantId: string
   profile: {
@@ -20,6 +22,7 @@ export interface TenantContext {
  */
 export async function getTenantContext(): Promise<TenantContext> {
   const supabase = await createClient()
+  const adminSupabase = createAdminClient()
 
   const {
     data: { user },
@@ -41,6 +44,7 @@ export async function getTenantContext(): Promise<TenantContext> {
 
   return {
     supabase,
+    adminSupabase,
     userId: user.id,
     tenantId: profile.tenant_id,
     profile: profile as { role: string; tenant_id: string },

@@ -42,7 +42,8 @@ export default function TenantMaintenancePage() {
     setError(null)
     setSuccess(false)
 
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget
+    const formData = new FormData(form)
     const result = await submitTenantMaintenanceRequest(formData)
 
     if (result && 'error' in result && result.error) {
@@ -51,7 +52,7 @@ export default function TenantMaintenancePage() {
     } else {
       setSuccess(true)
       setLoading(false)
-      e.currentTarget.reset()
+      form.reset()
       // Refresh the list
       loadRequests()
     }
@@ -147,8 +148,12 @@ export default function TenantMaintenancePage() {
         ) : (
           <div className="divide-y divide-slate-100">
             {requests.map((req) => {
-              const unit = req.units as any
-              const building = unit?.buildings as any
+              const unitArray = req.units as any
+              const unit = Array.isArray(unitArray) ? unitArray[0] : unitArray
+
+              const buildingArray = unit?.buildings as any
+              const building = Array.isArray(buildingArray) ? buildingArray[0] : buildingArray
+
               return (
                 <div key={req.id} className="px-6 py-4 hover:bg-slate-50/50 transition-colors">
                   <div className="flex items-start justify-between gap-4">

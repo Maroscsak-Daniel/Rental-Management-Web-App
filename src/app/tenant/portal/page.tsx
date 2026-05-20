@@ -1,18 +1,20 @@
 import { getTenantContext } from '@/lib/tenants/get-tenant-context'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function TenantPortalPage() {
-  const { supabase, tenantId } = await getTenantContext()
+  const { adminSupabase, tenantId } = await getTenantContext()
 
   // Fetch tenant name
-  const { data: tenant } = await supabase
+  const { data: tenant } = await adminSupabase
     .from('tenants')
     .select('first_name, last_name')
     .eq('id', tenantId)
     .single()
 
   // Fetch active lease with unit + building joins
-  const { data: activeLease } = await supabase
+  const { data: activeLease } = await adminSupabase
     .from('leases')
     .select(`
       id,
@@ -39,14 +41,14 @@ export default async function TenantPortalPage() {
     .maybeSingle()
 
   // Count pending invoices
-  const { count: pendingInvoiceCount } = await supabase
+  const { count: pendingInvoiceCount } = await adminSupabase
     .from('invoices')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
     .in('status', ['pending', 'overdue'])
 
   // Count open maintenance requests
-  const { count: openMaintenanceCount } = await supabase
+  const { count: openMaintenanceCount } = await adminSupabase
     .from('maintenance_requests')
     .select('id', { count: 'exact', head: true })
     .eq('submitted_by_tenant_id', tenantId)
@@ -56,9 +58,12 @@ export default async function TenantPortalPage() {
     ? `${tenant.first_name} ${tenant.last_name}`
     : 'Tenant'
 
-  // Type helpers for the nested joins
-  const unit = activeLease?.units as any
-  const building = unit?.buildings as any
+  // Type helpers for the nested joins (Supabase may return arrays without !inner)
+  const unitArray = activeLease?.units as any
+  const unit = Array.isArray(unitArray) ? unitArray[0] : unitArray
+
+  const buildingArray = unit?.buildings as any
+  const building = Array.isArray(buildingArray) ? buildingArray[0] : buildingArray
 
   return (
     <div className="p-6 md:p-10 max-w-5xl mx-auto">

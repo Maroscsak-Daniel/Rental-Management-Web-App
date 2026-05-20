@@ -1,9 +1,11 @@
 import { getTenantContext } from '@/lib/tenants/get-tenant-context'
 
-export default async function TenantInvoicesPage() {
-  const { supabase, tenantId } = await getTenantContext()
+export const dynamic = 'force-dynamic'
 
-  const { data: invoices, error } = await supabase
+export default async function TenantInvoicesPage() {
+  const { adminSupabase, tenantId } = await getTenantContext()
+
+  const { data: invoices, error } = await adminSupabase
     .from('invoices')
     .select('id, amount, status, due_date, category, created_at')
     .eq('tenant_id', tenantId)
