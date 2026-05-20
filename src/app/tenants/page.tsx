@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { deactivateTenant, reactivateTenant } from './actions'
+import { formatUnitLabel } from '@/lib/display'
 
 export default async function TenantsPage({
   searchParams,
@@ -25,6 +26,7 @@ export default async function TenantsPage({
         units(
           id,
           floor,
+          apartment_number,
           buildings(name)
         )
       )
@@ -142,7 +144,7 @@ export default async function TenantsPage({
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                         {tenant.activeLease ? (
                           <>
-                            {tenant.activeLease.units?.floor || 'N/A'} - {tenant.activeLease.units?.buildings?.name || 'N/A'}
+                            {formatUnitLabel(tenant.activeLease.units)}
                           </>
                         ) : (
                           <span className="text-slate-400">—</span>

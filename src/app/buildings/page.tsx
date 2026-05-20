@@ -19,7 +19,7 @@ export default async function BuildingsPage() {
           <div className="sm:flex-auto">
             <h1 className="text-3xl font-bold tracking-tight text-white">Buildings</h1>
             <p className="mt-2 text-sm text-zinc-400">
-              A list of all the buildings in your portfolio including their name, unit count, and creation date.
+              A list of all the buildings in your portfolio including their name, address, unit count, and creation date.
             </p>
           </div>
           <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -46,6 +46,9 @@ export default async function BuildingsPage() {
                           Name
                         </th>
                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
+                          Address
+                        </th>
+                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
                           Units
                         </th>
                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
@@ -63,6 +66,9 @@ export default async function BuildingsPage() {
                             <Link href={`/buildings/${building.id}`} className="hover:underline">
                               {building.name}
                             </Link>
+                          </td>
+                          <td className="px-3 py-4 text-sm text-zinc-300 max-w-xs truncate">
+                            {building.address}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
                             {/* @ts-expect-error units is an array of objects because of the count query */}
@@ -83,7 +89,7 @@ export default async function BuildingsPage() {
                       ))}
                       {buildings?.length === 0 && (
                         <tr>
-                          <td colSpan={4} className="py-8 text-center text-sm text-zinc-400">
+                          <td colSpan={5} className="py-8 text-center text-sm text-zinc-400">
                             No buildings found. Click 'Add Building' to get started.
                           </td>
                         </tr>

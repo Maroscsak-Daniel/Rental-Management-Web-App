@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { deleteUnit } from '../actions'
+import { formatUnitLabel } from '@/lib/display'
 
 export default async function UnitDetailPage({
   params,
@@ -30,7 +31,7 @@ export default async function UnitDetailPage({
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
               {/* @ts-expect-error join type */}
-              Unit Detail: {unit.buildings.name} - Floor {unit.floor || 'N/A'}
+              Unit Detail: {formatUnitLabel(unit)}
             </h2>
             <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
               <div className="mt-2 flex items-center text-sm text-zinc-400">
@@ -80,6 +81,10 @@ export default async function UnitDetailPage({
                     {unit.status.charAt(0).toUpperCase() + unit.status.slice(1)}
                   </span>
                 </dd>
+              </div>
+              <div className="sm:col-span-1">
+                <dt className="text-sm font-medium text-zinc-400">Apartment number</dt>
+                <dd className="mt-1 text-sm text-white">{unit.apartment_number || 'N/A'}</dd>
               </div>
               <div className="sm:col-span-1">
                 <dt className="text-sm font-medium text-zinc-400">Floor</dt>

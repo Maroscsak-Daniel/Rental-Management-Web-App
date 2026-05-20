@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { deleteUnit } from '@/app/units/actions'
 import DeleteBuildingButton from '@/components/DeleteBuildingButton'
+import type { Unit } from '@/lib/definitions'
 
 export default async function BuildingDetailPage({
   params,
@@ -33,6 +34,9 @@ export default async function BuildingDetailPage({
               {building.name}
             </h2>
             <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
+              <div className="mt-2 flex items-center text-sm text-zinc-400">
+                {building.address}
+              </div>
               <div className="mt-2 flex items-center text-sm text-zinc-400">
                 Added {new Date(building.created_at).toLocaleDateString()}
               </div>
@@ -73,6 +77,9 @@ export default async function BuildingDetailPage({
                   <thead className="bg-zinc-900">
                     <tr>
                       <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-6">
+                        Apartment
+                      </th>
+                      <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
                         Floor
                       </th>
                       <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
@@ -90,12 +97,15 @@ export default async function BuildingDetailPage({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800 bg-zinc-900/50">
-                    {building.units.map((unit) => (
+                    {(building.units as Unit[]).map((unit) => (
                       <tr key={unit.id} className="hover:bg-zinc-800/50">
                         <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-6">
                           <Link href={`/units/${unit.id}`} className="hover:underline">
-                            {unit.floor || 'N/A'}
+                            {unit.apartment_number || 'N/A'}
                           </Link>
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
+                          {unit.floor || 'N/A'}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
                           {unit.size_sqm || 'N/A'}
@@ -131,7 +141,7 @@ export default async function BuildingDetailPage({
                     ))}
                     {building.units.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-sm text-zinc-400">
+                        <td colSpan={6} className="py-8 text-center text-sm text-zinc-400">
                           No units found in this building. Click 'Add Unit' to get started.
                         </td>
                       </tr>
