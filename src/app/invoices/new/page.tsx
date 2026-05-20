@@ -50,7 +50,7 @@ function InvoiceForm() {
       <div className="text-center py-10">
         <p className="text-slate-600 mb-3">You need to create a tenant before issuing invoices.</p>
         <Link href="/tenants/new" className="text-[#781C21] font-medium hover:underline">
-          Create a Tenant â†’
+          Create a Tenant →
         </Link>
       </div>
     )

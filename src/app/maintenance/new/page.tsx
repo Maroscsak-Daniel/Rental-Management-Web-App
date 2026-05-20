@@ -106,7 +106,7 @@ export default function NewMaintenancePage() {
                   >
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
-                        {unit.buildings.name} â€” Floor {unit.floor || 'N/A'}
+                        {unit.buildings.name} — Floor {unit.floor || 'N/A'}
                       </option>
                     ))}
                   </select>

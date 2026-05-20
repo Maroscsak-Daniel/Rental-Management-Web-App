@@ -34,7 +34,8 @@ export default async function OutstandingPaymentsWidget() {
         />
       ) : (
         <div className="mt-4 overflow-hidden rounded-lg border border-slate-200/60">
-          <table className="min-w-full divide-y divide-slate-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
                 <th className="py-2.5 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -79,6 +80,7 @@ export default async function OutstandingPaymentsWidget() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

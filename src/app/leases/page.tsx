@@ -60,7 +60,8 @@ export default async function LeasesPage() {
         ) : (
           <div className="mt-8">
             <div className="overflow-hidden bg-white shadow-sm ring-1 ring-slate-200/60 rounded-xl">
-              <table className="min-w-full divide-y divide-slate-200">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-slate-200">
                 <thead className="bg-slate-50">
                   <tr>
                     <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 sm:pl-6">Tenant</th>
@@ -135,6 +136,7 @@ export default async function LeasesPage() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}

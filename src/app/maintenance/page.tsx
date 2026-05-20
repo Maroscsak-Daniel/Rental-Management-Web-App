@@ -182,7 +182,7 @@ export default async function MaintenancePage({
                             request.status,
                             daysOpen
                           )
-                          const unitLabel = `${request.units.buildings.name} â€” Floor ${request.units.floor || 'N/A'}`
+                          const unitLabel = `${request.units.buildings.name} — Floor ${request.units.floor || 'N/A'}`
 
                           return (
                             <tr

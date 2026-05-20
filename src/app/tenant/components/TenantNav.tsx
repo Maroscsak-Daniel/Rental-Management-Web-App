@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 export default function TenantNav() {
   const pathname = usePathname()
+  const [open, setOpen] = useState(false)
 
   const navItems = [
     {
@@ -30,51 +32,104 @@ export default function TenantNav() {
     },
   ]
 
+  const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <ul className="-mx-2 space-y-2">
+      {navItems.map((item) => {
+        const isActive =
+          item.href === '/tenant/portal'
+            ? pathname === '/tenant/portal'
+            : pathname.startsWith(item.href)
+        return (
+          <li key={item.name}>
+            <Link
+              href={item.href}
+              onClick={onNavigate}
+              className={`group flex items-center gap-x-3 rounded-md p-2.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? 'bg-[#617891] text-white'
+                  : 'text-zinc-300 hover:bg-[#617891]/50 hover:text-white'
+              }`}
+            >
+              {item.icon}
+              {item.name}
+            </Link>
+          </li>
+        )
+      })}
+    </ul>
+  )
+
+  const signOutButton = (
+    <form action="/api/auth/logout" method="post">
+      <button
+        type="submit"
+        className="flex w-full items-center gap-x-3 rounded-md bg-[#781C21] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#61161a] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#25344F]"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+        Sign out
+      </button>
+    </form>
+  )
+
   return (
-    <nav className="fixed inset-y-0 left-0 z-50 hidden md:flex w-64 flex-col bg-[#25344F] border-r border-[#25344F] sidebar">
-      <div className="flex h-16 shrink-0 items-center px-6 border-b border-[#617891]/30">
-        <span className="text-xl font-bold tracking-tight text-white">Tenant Portal</span>
+    <>
+      {/* ── Desktop sidebar ─────────────────────────────────── */}
+      <nav className="fixed inset-y-0 left-0 z-50 hidden md:flex w-64 flex-col bg-[#25344F] border-r border-[#25344F] sidebar">
+        <div className="flex h-16 shrink-0 items-center px-6 border-b border-[#617891]/30">
+          <span className="text-xl font-bold tracking-tight text-white">Tenant Portal</span>
+        </div>
+        <div className="flex flex-1 flex-col overflow-y-auto px-0 py-6">
+          <ul className="flex flex-1 flex-col gap-y-4 px-4">
+            <li><NavLinks /></li>
+            <li className="mt-auto">{signOutButton}</li>
+          </ul>
+        </div>
+      </nav>
+
+      {/* ── Mobile top bar ──────────────────────────────────── */}
+      <div className="fixed top-0 inset-x-0 z-40 flex h-14 items-center justify-between bg-[#25344F] px-4 md:hidden">
+        <span className="text-lg font-bold tracking-tight text-white">Tenant Portal</span>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="rounded-md p-2 text-zinc-300 hover:text-white focus:outline-none"
+          aria-label="Open navigation menu"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
       </div>
-      <div className="flex flex-1 flex-col overflow-y-auto px-0 py-6">
-        <ul className="flex flex-1 flex-col gap-y-4 px-4">
-          <li>
-            <ul className="-mx-2 space-y-2">
-              {navItems.map((item) => {
-                const isActive =
-                  item.href === '/tenant/portal'
-                    ? pathname === '/tenant/portal'
-                    : pathname.startsWith(item.href)
-                return (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className={`group flex items-center gap-x-3 rounded-md p-2.5 text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-[#617891] text-white'
-                          : 'text-zinc-300 hover:bg-[#617891]/50 hover:text-white'
-                      }`}
-                    >
-                      {item.icon}
-                      {item.name}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </li>
-          <li className="mt-auto">
-            <form action="/api/auth/logout" method="post">
+
+      {/* ── Mobile slide-out drawer ─────────────────────────── */}
+      {open && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60"
+            onClick={() => setOpen(false)}
+            aria-hidden="true"
+          />
+          {/* Panel */}
+          <nav className="fixed inset-y-0 left-0 w-64 flex flex-col bg-[#25344F]">
+            <div className="flex h-14 shrink-0 items-center justify-between px-6 border-b border-[#617891]/30">
+              <span className="text-lg font-bold tracking-tight text-white">Tenant Portal</span>
               <button
-                type="submit"
-                className="flex w-full items-center gap-x-3 rounded-md bg-[#781C21] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#61161a] focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#25344F]"
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md p-1 text-zinc-300 hover:text-white focus:outline-none"
+                aria-label="Close menu"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                Sign out
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
-            </form>
-          </li>
-        </ul>
-      </div>
-    </nav>
+            </div>
+            <div className="flex flex-1 flex-col overflow-y-auto py-6">
+              <ul className="flex flex-1 flex-col gap-y-4 px-4">
+                <li><NavLinks onNavigate={() => setOpen(false)} /></li>
+                <li className="mt-auto">{signOutButton}</li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+      )}
+    </>
   )
 }

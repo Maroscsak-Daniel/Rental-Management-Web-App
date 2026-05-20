@@ -73,7 +73,7 @@ function LeaseForm() {
       <div className="text-center py-10">
         <p className="text-slate-600 mb-3">You need to create a tenant first.</p>
         <Link href="/tenants/new" className="text-[#781C21] font-medium hover:underline">
-          Create a Tenant â†’
+          Create a Tenant →
         </Link>
       </div>
     )
@@ -84,7 +84,7 @@ function LeaseForm() {
       <div className="text-center py-10">
         <p className="text-slate-600 mb-3">You need to add a unit to your portfolio first.</p>
         <Link href="/units" className="text-[#781C21] font-medium hover:underline">
-          View Units â†’
+          View Units →
         </Link>
       </div>
     )
