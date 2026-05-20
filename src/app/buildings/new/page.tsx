@@ -15,10 +15,10 @@ export default function NewBuildingPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    
+
     const formData = new FormData(e.currentTarget)
     const result = await createBuilding(formData)
-    
+
     if (result?.error) {
       setError(result.error)
       setLoading(false)
@@ -28,19 +28,19 @@ export default function NewBuildingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
       <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="md:flex md:items-center md:justify-between mb-8">
           <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
+            <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:truncate sm:text-3xl sm:tracking-tight">
               Add New Building
             </h2>
           </div>
           <div className="mt-4 flex md:ml-4 md:mt-0">
             <Link
               href="/buildings"
-              className="inline-flex items-center rounded-md bg-zinc-800 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-zinc-700"
+              className="inline-flex items-center rounded-md bg-white border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
             >
               Cancel
             </Link>
@@ -53,54 +53,50 @@ export default function NewBuildingPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-zinc-900/50 shadow-sm ring-1 ring-white/10 sm:rounded-xl md:col-span-2">
+        <form onSubmit={handleSubmit} className="bg-white shadow-sm ring-1 ring-slate-200/60 sm:rounded-xl md:col-span-2">
           <div className="px-4 py-6 sm:p-8">
             <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div className="sm:col-span-4">
-                <label htmlFor="name" className="block text-sm font-medium leading-6 text-white">
+                <label htmlFor="name" className="block text-sm font-medium leading-6 text-slate-700">
                   Building Name
                 </label>
                 <div className="mt-2">
-                  <div className="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-white">
-                    <input
-                      type="text"
-                      name="name"
-                      id="name"
-                      autoComplete="off"
-                      className="flex-1 border-0 bg-transparent py-1.5 pl-3 text-white focus:ring-0 sm:text-sm sm:leading-6"
-                      placeholder="Sunset Towers"
-                      required
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    autoComplete="off"
+                    className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
+                    placeholder="Sunset Towers"
+                    required
+                  />
                 </div>
-                <p className="mt-3 text-sm leading-6 text-zinc-400">Must be unique across your properties.</p>
+                <p className="mt-3 text-sm leading-6 text-slate-400">Must be unique across your properties.</p>
               </div>
 
               <div className="sm:col-span-4">
-                <label htmlFor="address" className="block text-sm font-medium leading-6 text-white">
+                <label htmlFor="address" className="block text-sm font-medium leading-6 text-slate-700">
                   Address
                 </label>
                 <div className="mt-2">
-                  <div className="flex rounded-md bg-white/5 ring-1 ring-inset ring-white/10 focus-within:ring-2 focus-within:ring-inset focus-within:ring-white">
-                    <input
-                      type="text"
-                      name="address"
-                      id="address"
-                      autoComplete="street-address"
-                      className="flex-1 border-0 bg-transparent py-1.5 pl-3 text-white focus:ring-0 sm:text-sm sm:leading-6"
-                      placeholder="Str. Unirii, Nr. 1, City Cluj-Napoca"
-                      required
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    name="address"
+                    id="address"
+                    autoComplete="street-address"
+                    className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
+                    placeholder="Str. Unirii, Nr. 1, City Cluj-Napoca"
+                    required
+                  />
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-end gap-x-6 border-t border-white/10 px-4 py-4 sm:px-8 bg-zinc-900/50">
+          <div className="flex items-center justify-end gap-x-6 border-t border-slate-200 px-4 py-4 sm:px-8 bg-slate-50 rounded-b-xl">
             <button
               type="submit"
               disabled={loading}
-              className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-black shadow-sm hover:bg-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50"
+              className="rounded-md bg-[#781C21] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#61161a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#781C21] disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Save Building'}
             </button>

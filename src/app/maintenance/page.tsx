@@ -1,12 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import MaintenanceStatusBadge from '@/components/MaintenanceStatusBadge'
 import { MaintenanceStatus } from '@/lib/definitions'
-import {
-  computeDaysOpen,
-  isOverdueOpenRequest,
-} from '@/lib/maintenance/days-open'
+import { computeDaysOpen, isOverdueOpenRequest } from '@/lib/maintenance/days-open'
+import MaintenanceFilters from './MaintenanceFilters'
 
 type MaintenanceListRow = {
   id: string
@@ -23,63 +22,115 @@ type MaintenanceListRow = {
   tenants: { id: string; first_name: string; last_name: string } | null
 }
 
-export default async function MaintenancePage() {
+export default async function MaintenancePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; building?: string; unit?: string }>
+}) {
+  const { status, building, unit } = await searchParams
   const supabase = await createClient()
 
-  const { data: requests, error } = await supabase
-    .from('maintenance_requests')
-    .select(
-      `
-      id,
-      description,
-      reported_at,
-      status,
-      resolved_at,
-      submitted_by_tenant_id,
-      units!inner (
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) redirect('/login')
+
+  const { data: buildings } = await supabase
+    .from('buildings')
+    .select('id, name')
+    .eq('landlord_id', user.id)
+    .order('name')
+
+  const buildingIds = (buildings ?? []).map((b) => b.id)
+
+  const { data: units } = buildingIds.length
+    ? await supabase
+        .from('units')
+        .select('id, floor, building_id')
+        .in('building_id', buildingIds)
+        .order('floor')
+    : { data: [] }
+
+  const unitIds = (units ?? []).map((u) => u.id)
+
+  let requests: MaintenanceListRow[] | null = []
+  let error: { message: string } | null = null
+
+  if (unitIds.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query: any = supabase
+      .from('maintenance_requests')
+      .select(
+        `
         id,
-        floor,
-        buildings!inner (id, name)
-      ),
-      tenants (id, first_name, last_name)
-    `
-    )
-    .order('reported_at', { ascending: false })
+        description,
+        reported_at,
+        status,
+        resolved_at,
+        submitted_by_tenant_id,
+        units!inner (
+          id,
+          floor,
+          buildings!inner (id, name)
+        ),
+        tenants (id, first_name, last_name)
+      `
+      )
+      .in('unit_id', unitIds)
+      .order('reported_at', { ascending: false })
+
+    if (status) query = query.eq('status', status)
+    if (unit) query = query.eq('unit_id', unit)
+    if (building) query = query.eq('units.building_id', building)
+
+    const result = await query
+    requests = result.data
+    error = result.error
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">
               Maintenance
             </h1>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-slate-500">
               Track and resolve maintenance requests across your portfolio.
             </p>
           </div>
           <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
             <Link
               href="/maintenance/new"
-              className="block rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-black shadow-sm hover:bg-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="block rounded-md bg-[#781C21] px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-[#61161a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#781C21]"
             >
               New Request
             </Link>
           </div>
         </div>
 
+        <MaintenanceFilters
+          buildings={buildings ?? []}
+          units={units ?? []}
+          currentStatus={status ?? ''}
+          currentBuilding={building ?? ''}
+          currentUnit={unit ?? ''}
+        />
+
         {error ? (
           <div className="mt-8 text-red-500">
             Error loading maintenance requests: {error.message}
           </div>
         ) : (
-          <div className="mt-8 flow-root">
+          <div className="mt-6 flow-root">
             <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <div className="overflow-hidden shadow ring-1 ring-white/10 sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-zinc-800">
-                    <thead className="bg-zinc-900">
+                <div className="overflow-hidden shadow-sm ring-1 ring-slate-200/60 sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
                       <tr>
                         <th
                           scope="col"
@@ -120,7 +171,7 @@ export default async function MaintenancePage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800 bg-zinc-900/50">
-                      {(requests as unknown as MaintenanceListRow[] | null)?.map(
+                      {(requests as MaintenanceListRow[] | null)?.map(
                         (request) => {
                           const daysOpen = computeDaysOpen(
                             request.reported_at,

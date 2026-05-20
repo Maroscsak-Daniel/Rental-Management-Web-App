@@ -173,10 +173,40 @@ export async function updateLease(id: string, formData: FormData) {
       .select('unit_id')
       .eq('id', id)
       .single()
+  // Fetch current lease to know unit_id and previous status
+  const { data: currentLease, error: fetchError } = await supabase
+    .from('leases')
+    .select('unit_id, status')
+    .eq('id', id)
+    .single()
 
-    if (lease) {
-      await supabase.from('units').update({ status: 'vacant' }).eq('id', lease.unit_id)
-    }
+  if (fetchError || !currentLease) {
+    return { error: 'Lease not found.' }
+  }
+
+  // Derive status from end date: past → expired, future → active
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const endDateObj = new Date(endDate)
+  endDateObj.setHours(0, 0, 0, 0)
+  const newStatus = endDateObj < today ? 'expired' : 'active'
+
+  const { error } = await supabase
+    .from('leases')
+    .update({ start_date: startDate, end_date: endDate, rent_amount: rentAmount, status: newStatus })
+    .eq('id', id)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  // Sync unit occupancy when status changes
+  const wasActive = currentLease.status === 'active'
+  const isNowActive = newStatus === 'active'
+  if (!wasActive && isNowActive) {
+    await supabase.from('units').update({ status: 'occupied' }).eq('id', currentLease.unit_id)
+  } else if (wasActive && !isNowActive) {
+    await supabase.from('units').update({ status: 'vacant' }).eq('id', currentLease.unit_id)
   }
 
   revalidatePath('/leases')
@@ -188,20 +218,11 @@ export async function updateLease(id: string, formData: FormData) {
 export async function terminateLease(id: string) {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: 'Not authenticated' }
-  }
-
   // Get lease details first
   const { data: lease, error: fetchError } = await supabase
     .from('leases')
     .select('unit_id, tenant_id, status')
     .eq('id', id)
-    .eq('landlord_id', user.id)
     .single()
 
   if (fetchError || !lease) {
