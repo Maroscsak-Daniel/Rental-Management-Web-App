@@ -90,6 +90,22 @@ function UnitForm() {
           </div>
 
           <div className="sm:col-span-3">
+            <label htmlFor="apartment_number" className="block text-sm font-medium leading-6 text-white">
+              Apartment number (optional)
+            </label>
+            <div className="mt-2">
+              <input
+                type="text"
+                name="apartment_number"
+                id="apartment_number"
+                autoComplete="off"
+                className="block w-full rounded-md border-0 bg-white/5 py-1.5 px-3 text-white ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-white sm:text-sm sm:leading-6"
+                placeholder="e.g. 12A, 304"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-3">
             <label htmlFor="floor" className="block text-sm font-medium leading-6 text-white">
               Floor (optional)
             </label>

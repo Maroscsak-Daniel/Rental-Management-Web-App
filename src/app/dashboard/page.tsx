@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import { formatUnitLabel } from '@/lib/display'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -43,7 +44,7 @@ export default async function DashboardPage() {
       id,
       end_date,
       tenants(first_name, last_name),
-      units(floor, buildings(name))
+      units(floor, apartment_number, buildings(name))
     `)
     .eq('status', 'active')
     .lte('end_date', thirtyDaysFromNow.toISOString().split('T')[0])
@@ -122,7 +123,7 @@ export default async function DashboardPage() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">
                           {/* @ts-expect-error join type */}
-                          {lease.units?.floor || 'N/A'} - {lease.units?.buildings?.name || 'N/A'}
+                          {lease.units ? formatUnitLabel(lease.units) : 'N/A'}
                         </td>
                         <td className="whitespace-nowrap px-3 py-3 text-sm text-slate-500">
                           {new Date(lease.end_date).toLocaleDateString()}

@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 export async function createBuilding(formData: FormData) {
   const supabase = await createClient()
   const name = formData.get('name') as string
+  const address = formData.get('address') as string
 
   const {
     data: { user },
@@ -17,6 +18,7 @@ export async function createBuilding(formData: FormData) {
 
   const { error } = await supabase.from('buildings').insert({
     name,
+    address,
     landlord_id: user.id,
   })
 
@@ -34,10 +36,11 @@ export async function createBuilding(formData: FormData) {
 export async function updateBuilding(id: string, formData: FormData) {
   const supabase = await createClient()
   const name = formData.get('name') as string
+  const address = formData.get('address') as string
 
   const { error } = await supabase
     .from('buildings')
-    .update({ name })
+    .update({ name, address })
     .eq('id', id)
 
   if (error) {

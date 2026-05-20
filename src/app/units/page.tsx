@@ -46,6 +46,9 @@ export default async function UnitsPage() {
                           Building
                         </th>
                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
+                          Apartment
+                        </th>
+                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
                           Floor
                         </th>
                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
@@ -73,8 +76,11 @@ export default async function UnitsPage() {
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
                             <Link href={`/units/${unit.id}`} className="hover:underline">
-                              {unit.floor || 'N/A'}
+                              {unit.apartment_number || 'N/A'}
                             </Link>
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
+                            {unit.floor || 'N/A'}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-zinc-300">
                             {unit.size_sqm || 'N/A'}
@@ -110,7 +116,7 @@ export default async function UnitsPage() {
                       ))}
                       {units?.length === 0 && (
                         <tr>
-                          <td colSpan={6} className="py-8 text-center text-sm text-zinc-400">
+                          <td colSpan={7} className="py-8 text-center text-sm text-zinc-400">
                             No units found. Click 'Add Unit' to get started.
                           </td>
                         </tr>

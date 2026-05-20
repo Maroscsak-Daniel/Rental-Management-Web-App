@@ -14,6 +14,7 @@ export interface Building {
   id: string // UUID
   landlord_id: string // UUID
   name: string
+  address: string
   created_at: string
 }
 
@@ -21,6 +22,7 @@ export interface Unit {
   id: string // UUID
   building_id: string // UUID
   floor: string | null
+  apartment_number: string | null
   size_sqm: number | null
   rent_amount: number
   status: UnitStatus
