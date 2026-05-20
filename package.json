@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:phase4": "node scripts/run-phase4-tests.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

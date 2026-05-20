@@ -11,21 +11,40 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  const isPublicRoute = path === '/login' || path === '/register' || path.startsWith('/auth/callback')
-  
-  // Routes restricted to landlords only
-  const isLandlordRoute = path.startsWith('/dashboard') || path.startsWith('/buildings') || path.startsWith('/units')
+  const isPublicRoute =
+    path === '/login' ||
+    path === '/register' ||
+    path.startsWith('/auth/callback') ||
+    path === '/forgot-password' ||
+    path === '/reset-password'
 
-  if (!user && isLandlordRoute) {
+  const isLandlordRoute =
+    path.startsWith('/dashboard') ||
+    path.startsWith('/buildings') ||
+    path.startsWith('/units') ||
+    path.startsWith('/maintenance')
+
+  const isTenantRoute = path.startsWith('/tenant')
+
+  const isProtectedRoute = isLandlordRoute || isTenantRoute
+
+  if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && isPublicRoute) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (user && (path === '/login' || path === '/register')) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    const destination =
+      profile?.role === 'tenant' ? '/tenant/maintenance' : '/dashboard'
+    return NextResponse.redirect(new URL(destination, request.url))
   }
 
   if (user && isLandlordRoute) {
-    // Optimistic check: get user role from profiles table
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('role')
@@ -37,6 +56,22 @@ export async function proxy(request: NextRequest) {
     }
 
     if (profile?.role !== 'landlord') {
+      return NextResponse.redirect(new URL('/unauthorized', request.url))
+    }
+  }
+
+  if (user && isTenantRoute) {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (error) {
+      console.error('Proxy profile fetch error:', error)
+    }
+
+    if (profile?.role !== 'tenant') {
       return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
   }
