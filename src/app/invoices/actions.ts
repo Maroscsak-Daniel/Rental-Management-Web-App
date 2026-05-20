@@ -35,23 +35,40 @@ export async function createInvoice(formData: FormData) {
     return { error: 'Invalid tenant selected.' }
   }
 
+  const d = new Date()
+  const localToday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const initialStatus = dueDate < localToday ? 'overdue' : 'pending'
+
   const insertData: Record<string, any> = {
     landlord_id: user.id,
     tenant_id: tenantId,
     amount,
     due_date: dueDate,
     category,
-    status: 'pending', // Default status
+    status: initialStatus,
   }
 
   if (leaseId) {
     insertData.lease_id = leaseId
   }
 
-  const { error } = await supabase.from('invoices').insert(insertData)
+  const { data: newInvoice, error } = await supabase
+    .from('invoices')
+    .insert(insertData)
+    .select('id')
+    .single()
 
   if (error) {
     return { error: error.message }
+  }
+
+  // DB may have a default/trigger that forces status='pending' on insert.
+  // Do an explicit UPDATE afterwards to ensure past-due invoices are marked overdue.
+  if (initialStatus === 'overdue' && newInvoice?.id) {
+    await supabase
+      .from('invoices')
+      .update({ status: 'overdue' })
+      .eq('id', newInvoice.id)
   }
 
   revalidatePath('/invoices')
@@ -59,7 +76,7 @@ export async function createInvoice(formData: FormData) {
   return { success: true }
 }
 
-export async function getInvoices(month?: string, status?: string) {
+export async function getInvoices(month?: string, status?: string, tenantId?: string) {
   const supabase = await createClient()
 
   const {
@@ -91,6 +108,10 @@ export async function getInvoices(month?: string, status?: string) {
     } else {
       query = query.eq('status', status)
     }
+  }
+
+  if (tenantId && tenantId !== 'all') {
+    query = query.eq('tenant_id', tenantId)
   }
 
   if (month && month !== 'all') {

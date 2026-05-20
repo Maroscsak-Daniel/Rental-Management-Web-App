@@ -4,13 +4,11 @@ import { getInvoices } from './actions'
 import Navbar from '@/components/Navbar'
 import InvoiceFilters from './InvoiceFilters'
 
-// Calculate if overdue based on date
-function isOverdue(dueDateStr: string, status: string) {
+function isOverdue(dueDateStr: string, status: string): boolean {
   if (status === 'paid') return false
-  const dueDate = new Date(dueDateStr)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  return dueDate < today
+  const d = new Date()
+  const localToday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return dueDateStr < localToday
 }
 
 function StatusBadge({ status, overdue }: { status: string, overdue: boolean }) {
@@ -23,8 +21,8 @@ function StatusBadge({ status, overdue }: { status: string, overdue: boolean }) 
   return <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">Pending</span>
 }
 
-async function InvoicesList({ month, status }: { month: string, status: string }) {
-  const result = await getInvoices(month, status)
+async function InvoicesList({ month, status, tenant }: { month: string, status: string, tenant: string }) {
+  const result = await getInvoices(month, status, tenant)
   const invoices = result.data || []
 
   if (invoices.length === 0) {
@@ -126,6 +124,7 @@ export default async function InvoicesPage({
   const params = await searchParams
   const month = params.month || 'all'
   const status = params.status || 'all'
+  const tenant = params.tenant || 'all'
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -150,8 +149,8 @@ export default async function InvoicesPage({
 
         <InvoiceFilters />
 
-        <Suspense fallback={<div className="text-slate-500 text-center py-10">Loading invoices...</div>} key={`${month}-${status}`}>
-          <InvoicesList month={month} status={status} />
+        <Suspense fallback={<div className="text-slate-500 text-center py-10">Loading invoices...</div>} key={`${month}-${status}-${tenant}`}>
+          <InvoicesList month={month} status={status} tenant={tenant} />
         </Suspense>
       </main>
     </div>

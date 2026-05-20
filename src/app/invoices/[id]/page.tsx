@@ -38,9 +38,12 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
   const balance = Math.max(0, invoice.amount - totalPaid)
   
   const isPaid = invoice.status === 'paid'
+  const d = new Date()
+  const localToday = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const isOverdue = !isPaid && invoice.due_date < localToday
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 md:pl-64">
       <Navbar />
       <main className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -95,8 +98,10 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
                     <dd className="mt-1">
                       {isPaid ? (
                         <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Paid</span>
+                      ) : isOverdue ? (
+                        <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Overdue</span>
                       ) : (
-                        <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">{invoice.status.toUpperCase()}</span>
+                        <span className="inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">Pending</span>
                       )}
                     </dd>
                   </div>
