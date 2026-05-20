@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { jsPDF } from 'jspdf'
+import PDFDocument from 'pdfkit'
 
 export async function GET(
   request: Request,
@@ -43,77 +43,123 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (profile?.role === 'tenant' && invoice.tenants?.id !== user.id && invoice.tenant_id !== user.id) {
+    if (profile?.role === 'tenant') {
       const { data: tenantProfile } = await supabase
         .from('profiles')
         .select('tenant_id')
         .eq('id', user.id)
         .single()
-        
+
       if (tenantProfile?.tenant_id !== invoice.tenant_id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
     }
 
-    // Calculate totals
-    const totalPaid = (invoice.payments || []).reduce((sum: number, p: any) => sum + Number(p.amount), 0)
+    const totalPaid = (invoice.payments || []).reduce(
+      (sum: number, p: any) => sum + Number(p.amount),
+      0
+    )
     const balance = Math.max(0, invoice.amount - totalPaid)
 
-    // Generate PDF using jsPDF
-    const doc = new jsPDF()
+    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+      const doc = new PDFDocument({ margin: 50 })
+      const chunks: Buffer[] = []
 
-    // Header
-    doc.setFontSize(20)
-    doc.text('INVOICE', 190, 20, { align: 'right' })
-    
-    doc.setFontSize(10)
-    doc.text(`Invoice ID: ${invoice.id.split('-')[0]}`, 20, 40)
-    doc.text(`Date: ${new Date(invoice.created_at).toLocaleDateString()}`, 20, 46)
-    doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, 20, 52)
-    doc.text(`Status: ${invoice.status.toUpperCase()}`, 20, 58)
-    
-    // Bill To
-    doc.setFontSize(12)
-    doc.text('BILL TO:', 20, 75)
-    doc.setFontSize(10)
-    doc.text(`${invoice.tenants?.first_name || ''} ${invoice.tenants?.last_name || ''}`, 20, 81)
-    if (invoice.tenants?.email) doc.text(invoice.tenants.email, 20, 87)
-    if (invoice.tenants?.phone) doc.text(invoice.tenants.phone, 20, 93)
+      doc.on('data', (chunk) => chunks.push(chunk))
+      doc.on('end', () => resolve(Buffer.concat(chunks)))
+      doc.on('error', reject)
 
-    // Line Items
-    doc.setFontSize(12)
-    doc.text('DETAILS:', 20, 115)
-    
-    doc.setFontSize(10)
-    doc.text(`Category: ${invoice.category.toUpperCase()}`, 20, 125)
-    doc.text(`$${Number(invoice.amount).toFixed(2)}`, 190, 125, { align: 'right' })
-    
-    doc.line(20, 130, 190, 130)
-    
-    // Summary
-    doc.text(`Total Amount:`, 140, 140)
-    doc.text(`$${Number(invoice.amount).toFixed(2)}`, 190, 140, { align: 'right' })
-    
-    doc.text(`Amount Paid:`, 140, 146)
-    doc.text(`$${totalPaid.toFixed(2)}`, 190, 146, { align: 'right' })
-    
-    doc.setFont('helvetica', 'bold')
-    doc.text(`Balance Due:`, 140, 154)
-    doc.text(`$${balance.toFixed(2)}`, 190, 154, { align: 'right' })
+      // Header
+      doc.fontSize(24).font('Helvetica-Bold').text('INVOICE', { align: 'right' })
+      doc.moveDown(0.5)
 
-    // Footer
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(128, 128, 128)
-    doc.text('Thank you for your business.', 105, 270, { align: 'center' })
+      // Invoice metadata
+      doc.fontSize(10).font('Helvetica')
+      doc.text(`Invoice ID: ${invoice.id.split('-')[0]}`)
+      doc.text(`Issue Date: ${new Date(invoice.created_at).toLocaleDateString()}`)
+      doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`)
+      doc.text(`Status: ${invoice.status.toUpperCase()}`)
+      doc.moveDown(1)
 
-    // Output
-    const pdfBuffer = Buffer.from(doc.output('arraybuffer'))
+      // Divider
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke()
+      doc.moveDown(1)
 
-    return new NextResponse(pdfBuffer, {
+      // Bill To
+      doc.fontSize(12).font('Helvetica-Bold').text('BILL TO:')
+      doc.fontSize(10).font('Helvetica')
+      doc.text(`${invoice.tenants?.first_name || ''} ${invoice.tenants?.last_name || ''}`)
+      if (invoice.tenants?.email) doc.text(invoice.tenants.email)
+      if (invoice.tenants?.phone) doc.text(invoice.tenants.phone)
+      doc.moveDown(1.5)
+
+      // Details table header
+      doc.fontSize(12).font('Helvetica-Bold').text('DETAILS:')
+      doc.moveDown(0.5)
+
+      doc.fontSize(10).font('Helvetica-Bold')
+      doc.text('Description', 50, doc.y, { continued: true, width: 300 })
+      doc.text('Amount', { align: 'right' })
+
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke()
+      doc.moveDown(0.5)
+
+      // Line item
+      doc.font('Helvetica')
+      const categoryLabel = invoice.category.charAt(0).toUpperCase() + invoice.category.slice(1)
+      doc.text(categoryLabel, 50, doc.y, { continued: true, width: 300 })
+      doc.text(`$${Number(invoice.amount).toFixed(2)}`, { align: 'right' })
+      doc.moveDown(1)
+
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke()
+      doc.moveDown(0.5)
+
+      // Summary
+      doc.font('Helvetica').text('Total Amount:', 350, doc.y, { continued: true, width: 100 })
+      doc.text(`$${Number(invoice.amount).toFixed(2)}`, { align: 'right' })
+      doc.text('Amount Paid:', 350, doc.y, { continued: true, width: 100 })
+      doc.text(`$${totalPaid.toFixed(2)}`, { align: 'right' })
+      doc.font('Helvetica-Bold').text('Balance Due:', 350, doc.y, { continued: true, width: 100 })
+      doc.text(`$${balance.toFixed(2)}`, { align: 'right' })
+      doc.moveDown(2)
+
+      // Payment history
+      if (invoice.payments && invoice.payments.length > 0) {
+        doc.font('Helvetica-Bold').fontSize(12).text('PAYMENT HISTORY:')
+        doc.moveDown(0.5)
+        doc.fontSize(10).font('Helvetica-Bold')
+        doc.text('Date', 50, doc.y, { continued: true, width: 200 })
+        doc.text('Amount', { align: 'right' })
+        doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke()
+        doc.moveDown(0.5)
+
+        for (const payment of invoice.payments) {
+          doc.font('Helvetica')
+          doc.text(
+            new Date(payment.payment_date).toLocaleDateString(),
+            50,
+            doc.y,
+            { continued: true, width: 200 }
+          )
+          doc.text(`$${Number(payment.amount).toFixed(2)}`, { align: 'right' })
+        }
+        doc.moveDown(1)
+      }
+
+      // Footer
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke()
+      doc.moveDown(0.5)
+      doc.fontSize(9).font('Helvetica').fillColor('grey')
+        .text('Thank you for your business.', { align: 'center' })
+
+      doc.end()
+    })
+
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="invoice-${invoice.id}.pdf"`,
+        'Content-Disposition': `attachment; filename="invoice-${invoice.id.split('-')[0]}.pdf"`,
       },
     })
   } catch (err: any) {

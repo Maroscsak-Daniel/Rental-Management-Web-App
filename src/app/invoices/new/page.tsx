@@ -89,8 +89,9 @@ function InvoiceForm() {
               className="block w-full rounded-md border border-slate-200 px-3 py-2 text-slate-900 focus:border-[#781C21] focus:outline-none focus:ring-1 focus:ring-[#781C21] sm:text-sm"
             >
               <option value="rent">Rent</option>
-              <option value="deposit">Deposit</option>
-              <option value="other">Other / Fees</option>
+              <option value="utilities">Utilities</option>
+              <option value="repairs">Repairs</option>
+              <option value="other">Other</option>
             </select>
           </div>
         </div>

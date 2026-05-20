@@ -2,7 +2,7 @@ export type UserRole = 'landlord' | 'tenant'
 export type UnitStatus = 'occupied' | 'vacant'
 export type LeaseStatus = 'active' | 'expired' | 'terminated'
 export type InvoiceStatus = 'pending' | 'paid' | 'overdue'
-export type InvoiceType = 'rent' | 'deposit' | 'other'
+export type InvoiceType = 'rent' | 'utilities' | 'repairs' | 'other'
 export interface Profile {
   id: string // UUID matches auth.users.id
   role: UserRole
