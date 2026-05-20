@@ -129,7 +129,7 @@ export default async function InvoicesPage({
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10">
+      <main className="mt-14 md:mt-0 md:ml-64 max-w-5xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="sm:flex sm:items-center sm:justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">Invoices</h1>

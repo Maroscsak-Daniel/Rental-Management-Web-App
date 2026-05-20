@@ -2,8 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { formatUnitLabel } from '@/lib/display'
 import { terminateLease } from '../actions'
+
+const STATUS_STYLES: Record<string, string> = {
+  active: 'bg-emerald-50 text-emerald-700 ring-emerald-200/50',
+  expired: 'bg-amber-50 text-amber-700 ring-amber-200/50',
+  terminated: 'bg-red-50 text-red-700 ring-red-200/50',
+}
 
 export default async function LeaseDetailPage({
   params,
@@ -13,171 +18,178 @@ export default async function LeaseDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    notFound()
-  }
-
   const { data: lease, error } = await supabase
     .from('leases')
-    .select(
-      `
-      *,
+    .select(`
+      id,
+      start_date,
+      end_date,
+      rent_amount,
+      status,
       tenants ( id, first_name, last_name, email ),
       units (
         id,
         floor,
         apartment_number,
-        buildings ( id, name, address )
+        buildings ( name, address )
       )
-    `
-    )
+    `)
     .eq('id', id)
-    .eq('landlord_id', user.id)
     .single()
 
-  if (error || !lease) {
-    notFound()
-  }
+  if (error || !lease) notFound()
 
-  const tenant = lease.tenants as {
-    id: string
-    first_name: string
-    last_name: string
-    email: string
-  }
-  const unit = lease.units as {
-    id: string
-    floor: string | null
-    apartment_number: string | null
-    buildings: { id: string; name: string; address: string }
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tenant = lease.tenants as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const unit = lease.units as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const building = unit?.buildings as any
 
-  const statusStyles: Record<string, string> = {
-    active:
-      'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200/50',
-    expired: 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200/50',
-    terminated: 'bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200/50',
-  }
+  const isActive = lease.status === 'active'
 
   return (
-    <div className="min-h-screen bg-slate-50 md:pl-64">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <main className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10">
+      <main className="mt-14 md:mt-0 md:ml-64 max-w-4xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Link
               href="/leases"
-              className="text-sm text-slate-500 hover:text-[#781C21] mb-2 inline-block"
+              className="mb-3 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"
             >
               ← Back to Leases
             </Link>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Lease — {tenant.first_name} {tenant.last_name}
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              {formatUnitLabel({
-                floor: unit.floor,
-                apartment_number: unit.apartment_number,
-                buildings: unit.buildings,
-              })}
-            </p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Lease Detail</h1>
           </div>
           <div className="flex gap-3">
-            <Link
-              href={`/leases/${id}/edit`}
-              className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
-            >
-              Edit
-            </Link>
-            {lease.status === 'active' && (
-              <form
-                action={async () => {
-                  'use server'
-                  await terminateLease(id)
-                }}
-              >
-                <button
-                  type="submit"
-                  className="inline-flex items-center rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+            {isActive && (
+              <>
+                <Link
+                  href={`/leases/${id}/edit`}
+                  className="inline-flex items-center rounded-md bg-white border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                 >
-                  Terminate
-                </button>
-              </form>
+                  Edit
+                </Link>
+                <form
+                  action={async () => {
+                    'use server'
+                    await terminateLease(id)
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="inline-flex items-center rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm font-semibold text-red-600 shadow-sm hover:bg-red-100"
+                  >
+                    Terminate
+                  </button>
+                </form>
+              </>
             )}
           </div>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
-          <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Status
-              </dt>
-              <dd className="mt-1">
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusStyles[lease.status] ?? statusStyles.terminated}`}
-                >
-                  {lease.status}
-                </span>
-              </dd>
+        <div className="grid gap-6 sm:grid-cols-2">
+          {/* Lease info */}
+          <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm">
+            <div className="px-4 py-4 sm:px-6 border-b border-slate-100">
+              <h2 className="text-sm font-semibold text-slate-900">Lease Info</h2>
             </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Rent
-              </dt>
-              <dd className="mt-1 text-sm font-medium text-slate-900">
-                ${lease.rent_amount}/mo
-              </dd>
+            <div className="px-4 py-5 sm:p-6">
+              <dl className="space-y-4">
+                <div>
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">Status</dt>
+                  <dd className="mt-1">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${
+                        STATUS_STYLES[lease.status] ?? 'bg-slate-100 text-slate-600 ring-slate-200/50'
+                      }`}
+                    >
+                      {lease.status.charAt(0).toUpperCase() + lease.status.slice(1)}
+                    </span>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">Monthly Rent</dt>
+                  <dd className="mt-1 text-sm text-slate-900">
+                    ${Number(lease.rent_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">Start Date</dt>
+                  <dd className="mt-1 text-sm text-slate-900">
+                    {new Date(lease.start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">End Date</dt>
+                  <dd className="mt-1 text-sm text-slate-900">
+                    {new Date(lease.end_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </dd>
+                </div>
+              </dl>
             </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Start date
-              </dt>
-              <dd className="mt-1 text-sm text-slate-900">
-                {new Date(lease.start_date + 'T00:00:00').toLocaleDateString()}
-              </dd>
+          </div>
+
+          {/* Tenant info */}
+          <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm">
+            <div className="px-4 py-4 sm:px-6 border-b border-slate-100">
+              <h2 className="text-sm font-semibold text-slate-900">Tenant</h2>
             </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                End date
-              </dt>
-              <dd className="mt-1 text-sm text-slate-900">
-                {new Date(lease.end_date + 'T00:00:00').toLocaleDateString()}
-              </dd>
+            <div className="px-4 py-5 sm:p-6">
+              {tenant ? (
+                <dl className="space-y-4">
+                  <div>
+                    <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">Name</dt>
+                    <dd className="mt-1 text-sm text-slate-900">
+                      <Link href={`/tenants/${tenant.id}`} className="hover:underline text-[#781C21]">
+                        {tenant.first_name} {tenant.last_name}
+                      </Link>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">Email</dt>
+                    <dd className="mt-1 text-sm text-slate-900">{tenant.email}</dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="text-sm text-slate-400">No tenant data.</p>
+              )}
             </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Tenant
-              </dt>
-              <dd className="mt-1 text-sm text-slate-900">
-                <Link
-                  href={`/tenants/${tenant.id}`}
-                  className="text-[#781C21] hover:underline"
-                >
-                  {tenant.first_name} {tenant.last_name}
-                </Link>
-                <span className="block text-slate-500">{tenant.email}</span>
-              </dd>
+          </div>
+
+          {/* Unit info */}
+          <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm sm:col-span-2">
+            <div className="px-4 py-4 sm:px-6 border-b border-slate-100">
+              <h2 className="text-sm font-semibold text-slate-900">Unit</h2>
             </div>
-            <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Building
-              </dt>
-              <dd className="mt-1 text-sm text-slate-900">
-                <Link
-                  href={`/buildings/${unit.buildings.id}`}
-                  className="text-[#781C21] hover:underline"
-                >
-                  {unit.buildings.name}
-                </Link>
-                <span className="block text-slate-500">{unit.buildings.address}</span>
-              </dd>
+            <div className="px-4 py-5 sm:p-6">
+              {unit ? (
+                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div>
+                    <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">Building</dt>
+                    <dd className="mt-1 text-sm text-slate-900">{building?.name ?? '—'}</dd>
+                    <dd className="text-xs text-slate-500">{building?.address ?? ''}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-medium text-slate-400 uppercase tracking-wide">Unit</dt>
+                    <dd className="mt-1 text-sm text-slate-900">
+                      {unit.apartment_number ? `Apt ${unit.apartment_number}` : unit.floor ? `Floor ${unit.floor}` : '—'}
+                    </dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="text-sm text-slate-400">No unit data.</p>
+              )}
+              {unit && (
+                <div className="mt-4">
+                  <Link href={`/units/${unit.id}`} className="text-sm font-medium text-[#781C21] hover:underline">
+                    View unit →
+                  </Link>
+                </div>
+              )}
             </div>
-          </dl>
+          </div>
         </div>
       </main>
     </div>

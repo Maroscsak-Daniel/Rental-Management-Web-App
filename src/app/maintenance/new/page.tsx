@@ -55,7 +55,7 @@ export default function NewMaintenancePage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
+      <main className="mt-14 md:mt-0 md:ml-64 max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="md:flex md:items-center md:justify-between mb-8">
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:truncate sm:text-3xl sm:tracking-tight">
@@ -106,7 +106,7 @@ export default function NewMaintenancePage() {
                   >
                     {units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
-                        {unit.buildings.name} — Floor {unit.floor || 'N/A'}
+                        {unit.buildings.name} â€” Floor {unit.floor || 'N/A'}
                       </option>
                     ))}
                   </select>

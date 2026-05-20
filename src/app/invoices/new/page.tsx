@@ -50,7 +50,7 @@ function InvoiceForm() {
       <div className="text-center py-10">
         <p className="text-slate-600 mb-3">You need to create a tenant before issuing invoices.</p>
         <Link href="/tenants/new" className="text-[#781C21] font-medium hover:underline">
-          Create a Tenant →
+          Create a Tenant â†’
         </Link>
       </div>
     )
@@ -159,7 +159,7 @@ export default function NewInvoicePage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <main className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-10">
+      <main className="mt-14 md:mt-0 md:ml-64 max-w-2xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">New Invoice</h1>
           <p className="mt-1 text-sm text-slate-500">

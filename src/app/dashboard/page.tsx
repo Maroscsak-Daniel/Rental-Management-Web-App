@@ -11,7 +11,6 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-export default function DashboardPage() {
   // Fetch summary stats
   const { count: buildingsCount } = await supabase
     .from('buildings')
@@ -62,10 +61,10 @@ export default function DashboardPage() {
     .limit(5)
 
   return (
-    <div className="min-h-screen bg-slate-50 md:pl-64">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+      <main className="mt-14 md:mt-0 md:ml-64 max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 mb-8">
           Dashboard
         </h1>
@@ -75,12 +74,14 @@ export default function DashboardPage() {
           <OutstandingPaymentsWidget />
           <OpenMaintenanceWidget />
           <ExpiringLeasesWidget />
+        </div>
+
         {/* Expiring Leases */}
         <div className="mt-8 bg-white shadow-sm ring-1 ring-slate-200/60 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-slate-900">Expiring Leases (next 30 days)</h2>
             <Link href="/leases" className="text-sm font-medium text-[#781C21] hover:underline">
-              View all →
+              View all â†’
             </Link>
           </div>
           {expiringLeases && expiringLeases.length > 0 ? (
@@ -137,22 +138,22 @@ export default function DashboardPage() {
         {/* Quick Links */}
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Link href="/buildings" className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md hover:ring-slate-300">
-            <h3 className="text-base font-semibold text-slate-900 mb-1">Buildings →</h3>
+            <h3 className="text-base font-semibold text-slate-900 mb-1">Buildings â†’</h3>
             <p className="text-sm text-slate-500">Manage your properties</p>
           </Link>
 
           <Link href="/units" className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md hover:ring-slate-300">
-            <h3 className="text-base font-semibold text-slate-900 mb-1">Units →</h3>
+            <h3 className="text-base font-semibold text-slate-900 mb-1">Units â†’</h3>
             <p className="text-sm text-slate-500">View and manage units</p>
           </Link>
 
           <Link href="/tenants" className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md hover:ring-slate-300">
-            <h3 className="text-base font-semibold text-slate-900 mb-1">Tenants →</h3>
+            <h3 className="text-base font-semibold text-slate-900 mb-1">Tenants â†’</h3>
             <p className="text-sm text-slate-500">Manage tenant profiles</p>
           </Link>
 
           <Link href="/leases" className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60 transition-all hover:shadow-md hover:ring-slate-300">
-            <h3 className="text-base font-semibold text-slate-900 mb-1">Leases →</h3>
+            <h3 className="text-base font-semibold text-slate-900 mb-1">Leases â†’</h3>
             <p className="text-sm text-slate-500">View lease agreements</p>
           </Link>
         </div>

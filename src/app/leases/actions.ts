@@ -13,7 +13,6 @@ export async function createLease(formData: FormData) {
   const endDate = formData.get('end_date') as string
   const rentAmount = parseFloat(formData.get('rent_amount') as string)
 
-  // Validation
   if (!tenantId || !unitId || !startDate || !endDate) {
     return { error: 'All fields are required.' }
   }
@@ -52,7 +51,6 @@ export async function createLease(formData: FormData) {
     for (const lease of activeLeasesForUnit) {
       const existingStart = new Date(lease.start_date)
       const existingEnd = new Date(lease.end_date)
-      // Two date ranges overlap if (Start A < End B) and (End A > Start B)
       if (existingStart < newEnd && existingEnd > newStart) {
         return { error: 'This unit is already booked for the selected dates. Please choose different dates or a different unit.' }
       }
@@ -82,7 +80,6 @@ export async function createLease(formData: FormData) {
     return { error: 'This tenant already has an active lease. Terminate it first.' }
   }
 
-  // Create lease
   const { error: leaseError } = await supabase.from('leases').insert({
     landlord_id: user.id,
     tenant_id: tenantId,
@@ -97,7 +94,6 @@ export async function createLease(formData: FormData) {
     return { error: leaseError.message }
   }
 
-  // Set unit status to occupied
   await supabase.from('units').update({ status: 'occupied' }).eq('id', unitId)
 
   revalidatePath('/leases')
@@ -127,19 +123,6 @@ export async function updateLease(id: string, formData: FormData) {
     return { error: 'End date must be after start date.' }
   }
 
-  // Auto-detect if lease should be expired
-  const status = new Date(endDate) < new Date() ? 'expired' : undefined
-
-  const updateData: Record<string, unknown> = {
-    start_date: startDate,
-    end_date: endDate,
-    rent_amount: rentAmount,
-  }
-
-  if (status) {
-    updateData.status = status
-  }
-
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -148,31 +131,6 @@ export async function updateLease(id: string, formData: FormData) {
     return { error: 'Not authenticated' }
   }
 
-  const { error } = await supabase
-    .from('leases')
-    .update(updateData)
-    .eq('id', id)
-    .eq('landlord_id', user.id)
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  if (status === 'expired' && user) {
-    await resolveNotificationsByReference({
-      landlordId: user.id,
-      type: 'lease_expiry',
-      referenceId: id,
-    })
-  }
-
-  // If lease auto-expired, free up the unit
-  if (status === 'expired') {
-    const { data: lease } = await supabase
-      .from('leases')
-      .select('unit_id')
-      .eq('id', id)
-      .single()
   // Fetch current lease to know unit_id and previous status
   const { data: currentLease, error: fetchError } = await supabase
     .from('leases')
@@ -195,9 +153,18 @@ export async function updateLease(id: string, formData: FormData) {
     .from('leases')
     .update({ start_date: startDate, end_date: endDate, rent_amount: rentAmount, status: newStatus })
     .eq('id', id)
+    .eq('landlord_id', user.id)
 
   if (error) {
     return { error: error.message }
+  }
+
+  if (newStatus === 'expired') {
+    await resolveNotificationsByReference({
+      landlordId: user.id,
+      type: 'lease_expiry',
+      referenceId: id,
+    })
   }
 
   // Sync unit occupancy when status changes
@@ -218,7 +185,14 @@ export async function updateLease(id: string, formData: FormData) {
 export async function terminateLease(id: string) {
   const supabase = await createClient()
 
-  // Get lease details first
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
   const { data: lease, error: fetchError } = await supabase
     .from('leases')
     .select('unit_id, tenant_id, status')
@@ -233,7 +207,6 @@ export async function terminateLease(id: string) {
     return { error: 'Only active leases can be terminated.' }
   }
 
-  // Set lease to terminated
   const { error } = await supabase
     .from('leases')
     .update({ status: 'terminated' })
@@ -249,7 +222,6 @@ export async function terminateLease(id: string) {
     referenceId: id,
   })
 
-  // Set unit back to vacant
   await supabase.from('units').update({ status: 'vacant' }).eq('id', lease.unit_id)
 
   revalidatePath('/leases')

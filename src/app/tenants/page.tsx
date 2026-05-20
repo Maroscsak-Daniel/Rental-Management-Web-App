@@ -54,7 +54,7 @@ export default async function TenantsPage({
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+      <main className="mt-14 md:mt-0 md:ml-64 max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">Tenants</h1>
@@ -147,14 +147,14 @@ export default async function TenantsPage({
                             {formatUnitLabel(tenant.activeLease.units)}
                           </>
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-slate-400">â€”</span>
                         )}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
                         {tenant.activeLease ? (
                           new Date(tenant.activeLease.end_date).toLocaleDateString()
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-slate-400">â€”</span>
                         )}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm">

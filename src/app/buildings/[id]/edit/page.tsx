@@ -1,44 +1,15 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { updateBuilding } from '../../actions'
-import { createClient } from '@/lib/supabase/client'
+import { createBuilding } from '../actions'
 
-export default function EditBuildingPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = use(params)
-  const [name, setName] = useState('')
-  const [address, setAddress] = useState('')
+export default function NewBuildingPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [fetching, setFetching] = useState(true)
   const router = useRouter()
-  const supabase = createClient()
-
-  useEffect(() => {
-    async function loadBuilding() {
-      const { data, error } = await supabase
-        .from('buildings')
-        .select('name, address')
-        .eq('id', id)
-        .single()
-
-      if (error) {
-        setError('Failed to load building data')
-      } else if (data) {
-        setName(data.name)
-        setAddress(data.address)
-      }
-      setFetching(false)
-    }
-    loadBuilding()
-  }, [id, supabase])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -46,37 +17,29 @@ export default function EditBuildingPage({
     setError(null)
 
     const formData = new FormData(e.currentTarget)
-    const result = await updateBuilding(id, formData)
+    const result = await createBuilding(formData)
 
     if (result?.error) {
       setError(result.error)
       setLoading(false)
     } else {
-      router.push(`/buildings/${id}`)
+      router.push('/buildings')
     }
-  }
-
-  if (fetching) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-slate-500">Loading...</div>
-      </div>
-    )
   }
 
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar />
-      <main className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
+      <main className="md:ml-64 max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="md:flex md:items-center md:justify-between mb-8">
           <div className="min-w-0 flex-1">
             <h2 className="text-2xl font-bold leading-7 text-slate-900 sm:truncate sm:text-3xl sm:tracking-tight">
-              Edit Building
+              Add New Building
             </h2>
           </div>
           <div className="mt-4 flex md:ml-4 md:mt-0">
             <Link
-              href={`/buildings/${id}`}
+              href="/buildings"
               className="inline-flex items-center rounded-md bg-white border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
             >
               Cancel
@@ -102,14 +65,13 @@ export default function EditBuildingPage({
                     type="text"
                     name="name"
                     id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
                     autoComplete="off"
                     className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
                     placeholder="Sunset Towers"
                     required
                   />
                 </div>
+                <p className="mt-3 text-sm leading-6 text-slate-400">Must be unique across your properties.</p>
               </div>
 
               <div className="sm:col-span-4">
@@ -121,8 +83,6 @@ export default function EditBuildingPage({
                     type="text"
                     name="address"
                     id="address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
                     autoComplete="street-address"
                     className="block w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#25344F] focus:outline-none focus:ring-1 focus:ring-[#25344F] sm:text-sm"
                     placeholder="Str. Unirii, Nr. 1, City Cluj-Napoca"
@@ -138,7 +98,7 @@ export default function EditBuildingPage({
               disabled={loading}
               className="rounded-md bg-[#781C21] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#61161a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#781C21] disabled:opacity-50"
             >
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? 'Saving...' : 'Save Building'}
             </button>
           </div>
         </form>
