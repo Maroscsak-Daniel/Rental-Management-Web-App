@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import NotificationBell from '@/components/NotificationBell'
 
 const navItems = [
   {
@@ -93,7 +92,6 @@ export default function Navbar() {
           <span className="text-xl font-bold tracking-tight text-white">Rental Manager</span>
         </div>
         <div className="flex flex-1 flex-col overflow-y-auto px-0 py-6">
-          <NotificationBell />
           <ul className="flex flex-1 flex-col gap-y-4 px-4">
             <li><NavLinks /></li>
             <li className="mt-auto">{signOutButton}</li>
