@@ -29,7 +29,11 @@ export async function PUT(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  let body: { status?: MaintenanceStatus; resolution_notes?: string | null }
+  let body: {
+    status?: MaintenanceStatus
+    resolution_notes?: string | null
+    note?: string | null
+  }
   try {
     body = await request.json()
   } catch {
@@ -38,6 +42,7 @@ export async function PUT(
 
   const status = body.status
   const resolution_notes = body.resolution_notes ?? null
+  const noteText = body.note?.trim() || null
 
   if (!status) {
     return NextResponse.json({ error: 'status is required' }, { status: 400 })
@@ -98,15 +103,25 @@ export async function PUT(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Log a note entry whenever the user saves (with or without text)
-  const noteText = resolution_notes?.trim()
-  if (noteText) {
-    await supabase.from('maintenance_notes').insert({
+  // Always log a history entry when a status change occurs or a note is provided
+  const statusChanged = currentStatus !== status
+  if (noteText || statusChanged) {
+    const entryNote = noteText
+      ? noteText
+      : `Status changed to ${status.replace('_', ' ')}`
+
+    const { error: noteError } = await supabase.from('maintenance_notes').insert({
       maintenance_request_id: id,
       author_id: user.id,
-      note: noteText,
+      note: entryNote,
       status_at_time: status,
     })
+    
+    if (noteError) {
+      console.error('Failed to insert maintenance note:', noteError)
+      // Return the error so the frontend form catches it and shows it to the user
+      return NextResponse.json({ error: 'Failed to save note: ' + noteError.message }, { status: 500 })
+    }
   }
 
   if (status === 'in_progress' || status === 'resolved') {

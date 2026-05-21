@@ -17,9 +17,10 @@ export default function MaintenanceUpdateForm({
   const allowedNext = getAllowedNextStatuses(currentStatus)
   const statusOptions: MaintenanceStatus[] = [currentStatus, ...allowedNext]
   const [status, setStatus] = useState<MaintenanceStatus>(currentStatus)
-  const [resolutionNotes, setResolutionNotes] = useState(currentResolutionNotes ?? '')
+  const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
 
   if (currentStatus === 'resolved') {
@@ -34,6 +35,16 @@ export default function MaintenanceUpdateForm({
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setSuccess(false)
+
+    const noteText = note.trim()
+
+    // Require either a status change or a note
+    if (status === currentStatus && !noteText) {
+      setError('Please change the status or add a note.')
+      setLoading(false)
+      return
+    }
 
     try {
       const res = await fetch(`/api/maintenance/${id}`, {
@@ -41,7 +52,8 @@ export default function MaintenanceUpdateForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status,
-          resolution_notes: resolutionNotes.trim() || null,
+          resolution_notes: noteText || currentResolutionNotes,
+          note: noteText || null,
         }),
       })
 
@@ -52,6 +64,8 @@ export default function MaintenanceUpdateForm({
         return
       }
 
+      setNote('')
+      setSuccess(true)
       setLoading(false)
       router.refresh()
     } catch {
@@ -75,7 +89,10 @@ export default function MaintenanceUpdateForm({
           id="status"
           name="status"
           value={status}
-          onChange={(e) => setStatus(e.target.value as MaintenanceStatus)}
+          onChange={(e) => {
+            setStatus(e.target.value as MaintenanceStatus)
+            setSuccess(false)
+          }}
           className={selectClass}
         >
           {statusOptions.map((s) => (
@@ -85,23 +102,32 @@ export default function MaintenanceUpdateForm({
       </div>
 
       <div>
-        <label htmlFor="resolution_notes" className="block text-sm font-medium text-slate-700 mb-1.5">
-          Resolution Notes <span className="text-slate-400 font-normal">(optional)</span>
+        <label htmlFor="note" className="block text-sm font-medium text-slate-700 mb-1.5">
+          Note <span className="text-slate-400 font-normal">(will appear in history)</span>
         </label>
         <textarea
-          id="resolution_notes"
-          name="resolution_notes"
+          id="note"
+          name="note"
           rows={3}
-          value={resolutionNotes}
-          onChange={(e) => setResolutionNotes(e.target.value)}
+          value={note}
+          onChange={(e) => {
+            setNote(e.target.value)
+            setSuccess(false)
+          }}
           className={textareaClass}
-          placeholder="Describe what was done to resolve the issue..."
+          placeholder="Add a note about what was done..."
         />
       </div>
 
       {error && (
         <div className="rounded-lg bg-red-500/10 p-3 text-sm text-red-500 border border-red-500/20">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-lg bg-emerald-500/10 p-3 text-sm text-emerald-600 border border-emerald-500/20">
+          Updated successfully.
         </div>
       )}
 

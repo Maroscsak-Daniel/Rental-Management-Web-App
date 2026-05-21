@@ -39,11 +39,16 @@ export default async function MaintenanceDetailPage({
 
   if (error || !request) notFound()
 
-  const { data: notes } = await supabase
+  const { data: notes, error: notesError } = await supabase
     .from('maintenance_notes')
     .select('id, note, status_at_time, created_at')
     .eq('maintenance_request_id', id)
     .order('created_at', { ascending: true })
+
+  if (notesError) {
+    console.error('Failed to fetch maintenance notes:', notesError)
+    // Don't crash the page, just show empty history
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const unit = request.units as any
@@ -188,6 +193,7 @@ export default async function MaintenanceDetailPage({
           </div>
           <div className="px-4 py-5 sm:p-6">
             <MaintenanceUpdateForm
+              key={`${status}-${(notes ?? []).length}`}
               id={id}
               currentStatus={status}
               currentResolutionNotes={request.resolution_notes}

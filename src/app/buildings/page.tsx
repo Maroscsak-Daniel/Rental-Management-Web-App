@@ -71,7 +71,6 @@ export default async function BuildingsPage() {
                             {building.address}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
-                            {/* @ts-expect-error units is an array of objects because of the count query */}
                             {building.units[0]?.count || 0}
                           </td>
                           <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-500">
