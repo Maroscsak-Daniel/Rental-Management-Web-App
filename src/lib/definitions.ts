@@ -72,6 +72,7 @@ export interface ExpiringLease extends Lease {
   unit: {
     id: string
     floor: string | null
+    apartment_number: string | null
     buildings: { id: string; name: string }
   }
   tenant: Pick<Tenant, 'id' | 'first_name' | 'last_name'>
@@ -120,17 +121,3 @@ export interface Notification {
   created_at: string
 }
 
-export interface ExpiringLease extends Lease {
-  days_remaining: number
-  unit: {
-    id: string
-    floor: string | null
-    apartment_number?: string | null
-    buildings: { id: string; name: string }
-  }
-  tenant: {
-    id: string
-    first_name: string
-    last_name: string
-  }
-}
