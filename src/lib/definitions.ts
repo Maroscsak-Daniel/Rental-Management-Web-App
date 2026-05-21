@@ -111,6 +111,15 @@ export interface Payment {
   created_at: string
 }
 
+export interface MaintenanceNote {
+  id: string
+  maintenance_request_id: string
+  author_id: string
+  note: string
+  status_at_time: MaintenanceStatus
+  created_at: string
+}
+
 export interface Notification {
   id: string
   landlord_id: string

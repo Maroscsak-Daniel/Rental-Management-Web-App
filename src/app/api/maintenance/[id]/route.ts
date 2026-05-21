@@ -98,6 +98,17 @@ export async function PUT(
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Log a note entry whenever the user saves (with or without text)
+  const noteText = resolution_notes?.trim()
+  if (noteText) {
+    await supabase.from('maintenance_notes').insert({
+      maintenance_request_id: id,
+      author_id: user.id,
+      note: noteText,
+      status_at_time: status,
+    })
+  }
+
   if (status === 'in_progress' || status === 'resolved') {
     await resolveNotificationsByReference({
       landlordId: user.id,

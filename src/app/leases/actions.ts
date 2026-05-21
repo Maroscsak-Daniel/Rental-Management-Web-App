@@ -95,6 +95,7 @@ export async function createLease(formData: FormData) {
   }
 
   await supabase.from('units').update({ status: 'occupied' }).eq('id', unitId)
+  await supabase.from('tenants').update({ status: 'active' }).eq('id', tenantId)
 
   revalidatePath('/leases')
   revalidatePath('/tenants')
@@ -223,6 +224,7 @@ export async function terminateLease(id: string) {
   })
 
   await supabase.from('units').update({ status: 'vacant' }).eq('id', lease.unit_id)
+  await supabase.from('tenants').update({ status: 'inactive' }).eq('id', lease.tenant_id)
 
   revalidatePath('/leases')
   revalidatePath(`/leases/${id}`)
